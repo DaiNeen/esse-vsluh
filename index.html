@@ -1,0 +1,1858 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Эссе вслух</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,600&family=Onest:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: the essay sits on a wide reading sheet like a script on a stand; the control dock, voice settings, Azure settings and results stack in a narrow column beside it. On phones the dock pins to the bottom edge. */
+:root{
+  --paper:#EDF0F4;
+  --sheet:#FFFFFF;
+  --ink:#172030;
+  --muted:#5A6476;
+  --line:#D6DCE5;
+  --line-strong:#B9C2CF;
+  --accent:#2347C9;
+  --accent-ink:#FFFFFF;
+  --accent-soft:#E3E9FC;
+  --sent:#F0F3FD;
+  --marker:#FFE35A;
+  --marker-ink:#172030;
+  --ok:#1D8452; --ok-soft:#DCF2E5;
+  --close:#A4660E; --close-soft:#FBEBCF;
+  --bad:#C4362C; --bad-soft:#FBE1DE; --bad-ink:#FFFFFF;
+  --skip:#8790A0;
+  --shadow:0 1px 2px rgba(23,32,48,.05), 0 10px 30px rgba(23,32,48,.07);
+  --f-text:"Literata", Georgia, "Times New Roman", serif;
+  --f-ui:"Onest", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-num:"JetBrains Mono", ui-monospace, Consolas, monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F131A; --sheet:#171C25; --ink:#E5E9F0; --muted:#97A1B2; --line:#283040; --line-strong:#3A4458;
+    --accent:#86A0FF; --accent-ink:#0D1224; --accent-soft:#222C4A; --sent:#1C2333;
+    --marker:#E9C84A; --marker-ink:#15171C;
+    --ok:#55CC8F; --ok-soft:#163327; --close:#E8AE52; --close-soft:#3A2D15; --bad:#FF8073; --bad-soft:#3E1E1B; --bad-ink:#1A0B09;
+    --skip:#6D7688; --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.25);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F131A; --sheet:#171C25; --ink:#E5E9F0; --muted:#97A1B2; --line:#283040; --line-strong:#3A4458;
+  --accent:#86A0FF; --accent-ink:#0D1224; --accent-soft:#222C4A; --sent:#1C2333;
+  --marker:#E9C84A; --marker-ink:#15171C;
+  --ok:#55CC8F; --ok-soft:#163327; --close:#E8AE52; --close-soft:#3A2D15; --bad:#FF8073; --bad-soft:#3E1E1B; --bad-ink:#1A0B09;
+  --skip:#6D7688; --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.25);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 var(--f-ui);
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:max(20px,env(safe-area-inset-top,0px)) 40px;
+}
+button,select,input,textarea{font:inherit;color:inherit}
+[hidden]{display:none!important}
+a{color:var(--accent)}
+
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.top{display:flex;align-items:center;gap:14px}
+.mark{width:44px;height:44px;border-radius:12px;background:var(--accent);display:grid;place-items:center;flex:none}
+.mark svg{width:26px;height:26px}
+.mark rect{fill:var(--accent-ink)}
+h1{font:italic 600 1.75rem/1.1 var(--f-text);margin:0;letter-spacing:-.01em;text-wrap:balance}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+
+/* sheet */
+.sheet{background:var(--sheet);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);min-width:0}
+.sheet-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px 12px 22px;border-bottom:1px solid var(--line)}
+.sheet-title{display:flex;align-items:center;gap:8px;font-weight:600}
+.badge{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--close);background:var(--close-soft);padding:3px 8px;border-radius:999px}
+.meta{color:var(--muted);font-size:13px}
+.tools{display:flex;align-items:center;gap:12px}
+.reader{font-family:var(--f-text);font-size:clamp(1.1rem,1rem + .45vw,1.38rem);line-height:2.05;padding:22px clamp(18px,4vw,48px) 10px;max-width:44em;overflow-wrap:break-word}
+.reader p{margin:0 0 .9em}
+.s{border-radius:6px;transition:background-color .2s}
+.s.s-cur{background:var(--sent)}
+.w,.sw{border-radius:5px;-webkit-box-decoration-break:clone;box-decoration-break:clone;text-decoration-thickness:2px;text-underline-offset:.32em}
+.w{padding:.08em .12em;margin:0 -.12em;cursor:pointer;transition:background-color .12s,color .12s}
+.w:hover{background:var(--accent-soft)}
+.w.ok,.sw.ok{text-decoration-line:underline;text-decoration-color:var(--ok)}
+.w.close,.sw.close{background:var(--close-soft);text-decoration-line:underline;text-decoration-color:var(--close)}
+.w.bad,.sw.bad{background:var(--bad-soft);text-decoration-line:underline;text-decoration-style:wavy;text-decoration-color:var(--bad);text-decoration-thickness:1.5px}
+.w.skip,.sw.skip{color:var(--skip);text-decoration-line:underline;text-decoration-style:dotted;text-decoration-color:var(--skip)}
+.w.heard{background:var(--accent-soft)}
+.w.start::before{content:"▸";color:var(--accent);font-size:.75em;margin-right:.15em;vertical-align:.12em}
+.w.cur,.sw.cur{background:var(--marker);color:var(--marker-ink);box-shadow:0 0 0 2px var(--marker)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:12px 22px 16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.lg{display:inline-flex;align-items:center;gap:6px}
+.sw{font:500 15px/1.4 var(--f-text);padding:0 4px;color:var(--ink)}
+.sw.skip{color:var(--skip)}
+
+/* editor */
+.editor-wrap{padding:16px 22px 18px;display:flex;flex-direction:column;gap:10px}
+#editor{width:100%;min-height:340px;resize:vertical;border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--paper);font:1.05rem/1.7 var(--f-text);color:var(--ink)}
+#editor:focus{outline:2px solid var(--accent);outline-offset:1px}
+.editor-bar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* side */
+.side{display:flex;flex-direction:column;gap:14px;position:sticky;top:16px;min-width:0}
+.card{background:var(--sheet);border:1px solid var(--line);border-radius:16px;padding:16px;min-width:0}
+.dock{background:var(--sheet);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px}
+.live{display:flex;align-items:center;gap:10px;font-size:14px;min-height:22px}
+.live-text{font-variant-numeric:tabular-nums;min-width:0;flex:1}
+.tag{flex:none;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--paper);color:var(--muted);border:1px solid var(--line)}
+.tag.az{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--line-strong);flex:none}
+.dot.listen{background:var(--accent)}
+.dot.rec{background:var(--bad);animation:pulse 1.2s ease-in-out infinite}
+.dot.done{background:var(--ok)}
+.dot.warn{background:var(--close)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--bad) 45%,transparent)}50%{box-shadow:0 0 0 7px transparent}}
+.btns{display:flex;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--sheet);color:var(--ink);border-radius:999px;padding:9px 15px;font-weight:600;font-size:14px;line-height:1;cursor:pointer;transition:border-color .15s,background-color .15s,transform .08s}
+.btn:hover{border-color:var(--accent)}
+.btn:active{transform:translateY(1px)}
+.btn:focus-visible,.link-btn:focus-visible,.chip:focus-visible,.x:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.stop{background:var(--bad);border-color:var(--bad);color:var(--bad-ink)}
+.btn.big{flex:1;border-radius:12px;padding:14px;font-size:15px}
+.btn.sm{padding:7px 12px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn svg{width:18px;height:18px;flex:none;fill:currentColor}
+.link-btn{background:none;border:0;padding:0;color:var(--accent);font-weight:600;cursor:pointer;font-size:14px;text-align:left}
+.start-chip{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.start-chip b{color:var(--ink);font-family:var(--f-text);font-weight:600}
+.x{border:0;background:var(--paper);width:26px;height:26px;border-radius:50%;cursor:pointer;color:var(--muted);font-size:17px;line-height:1;flex:none}
+
+.settings{display:flex;flex-direction:column;gap:8px}
+.settings label{font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:baseline}
+.settings output{font:500 13px var(--f-num);color:var(--muted)}
+select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+input[type=text],input[type=password]{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--paper);font:500 13px var(--f-num)}
+.hint{margin:0;color:var(--muted);font-size:13px}
+
+/* azure card */
+.azcard{display:flex;flex-direction:column;gap:12px}
+.az-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.az-title{display:flex;flex-direction:column;gap:1px;min-width:0}
+.az-title b{font-size:15px}
+.switch{position:relative;width:46px;height:26px;flex:none}
+.switch input{position:absolute;inset:0;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;z-index:1}
+.switch span{position:absolute;inset:0;border-radius:999px;background:var(--line-strong);transition:background-color .15s;pointer-events:none}
+.switch span::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--sheet);box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+.switch input:checked + span{background:var(--accent)}
+.switch input:checked + span::after{transform:translateX(20px)}
+.switch input:focus-visible + span{outline:3px solid var(--accent);outline-offset:2px}
+.az-body{display:flex;flex-direction:column;gap:10px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;font-weight:600}
+.az-status{font-size:13px;color:var(--muted)}
+.az-status.ok{color:var(--ok)}
+.az-status.bad{color:var(--bad)}
+details{font-size:13px;border-top:1px solid var(--line);padding-top:10px}
+summary{cursor:pointer;color:var(--accent);font-weight:600}
+details ol{margin:8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+details p{margin:8px 0 0;color:var(--muted)}
+
+/* results */
+.results h2{font:600 1.08rem/1.3 var(--f-text);margin:0 0 12px}
+.results h3{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px;font-weight:600}
+.steps{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px;counter-reset:st}
+.steps li{display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;counter-increment:st;font-size:14px}
+.steps li::before{content:counter(st);width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font:600 13px/26px var(--f-num);text-align:center}
+.score{display:flex;align-items:center;gap:14px}
+.score-num{font:700 3.1rem/1 var(--f-ui);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.score-num small{font-size:1.3rem;font-weight:600;color:var(--muted);margin-left:2px}
+.score-label{font-size:14px;line-height:1.35}
+.bar{display:flex;height:10px;border-radius:999px;overflow:hidden;background:var(--paper);margin:14px 0 8px}
+.bar span{display:block;height:100%}
+.bar .ok,.sq.ok{background:var(--ok)}
+.bar .close,.sq.close{background:var(--close)}
+.bar .bad,.sq.bad{background:var(--bad)}
+.bar .skip,.sq.skip{background:var(--skip)}
+.counts{display:flex;flex-wrap:wrap;gap:4px 14px;margin:0;padding:0;list-style:none;font-size:13px;color:var(--muted)}
+.counts b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600}
+.sq{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+.stats{margin-top:14px;border-top:1px solid var(--line)}
+.stat{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.stat .k{font-size:14px}
+.stat .k small{display:block;color:var(--muted);font-size:12px}
+.stat .v{font:600 1.15rem var(--f-ui);font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat .v small{font-size:12px;color:var(--muted);font-weight:500}
+.verdict{margin:12px 0 0;font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:5px 9px;cursor:pointer;font:500 15px/1.25 var(--f-text);display:inline-flex;align-items:baseline;gap:6px;color:var(--ink)}
+.chip small{font:500 12px var(--f-ui);color:var(--muted)}
+.chip.bad{border-color:var(--bad);background:var(--bad-soft)}
+.chip.close{border-color:var(--close);background:var(--close-soft)}
+.chip.skip{color:var(--skip);border-style:dashed}
+.hist svg{width:100%;height:auto;display:block}
+.hist .b{fill:var(--line-strong)}
+.hist .b.last{fill:var(--accent)}
+.hist .axis{stroke:var(--line);stroke-width:1}
+.hist text{fill:var(--muted);font:500 10px var(--f-num)}
+.hist text.last{fill:var(--ink);font-weight:600}
+.note{font-size:12px;color:var(--muted);margin:12px 0 0}
+
+/* word popover */
+.pop{position:absolute;z-index:40;width:min(300px,calc(100vw - 24px));background:var(--sheet);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.2);padding:14px;display:flex;flex-direction:column;gap:10px}
+.pop-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pop-word{font:600 1.4rem/1.2 var(--f-text);overflow-wrap:anywhere}
+.pop-info{margin:0;font-size:13px;color:var(--muted)}
+.pop-info:empty{display:none}
+.pop-res{margin:0;font-size:14px;font-weight:600;min-height:1.3em}
+.pop-res.ok{color:var(--ok)}
+.pop-res.close{color:var(--close)}
+.pop-res.bad{color:var(--bad)}
+.pop-res.wait{color:var(--muted)}
+.ph-row{display:flex;flex-wrap:wrap;gap:4px}
+.ph{font:500 16px/1 var(--f-text);padding:6px 7px;border-radius:6px;background:var(--ok-soft);color:var(--ink);display:inline-flex;align-items:baseline;gap:3px}
+.ph.close{background:var(--close-soft)}
+.ph.bad{background:var(--bad-soft);box-shadow:inset 0 -2px 0 var(--bad)}
+.ph small{font:500 10px var(--f-num);color:var(--muted)}
+.ph-notes{margin:0;padding:0;list-style:none;font-size:13px;display:flex;flex-direction:column;gap:3px}
+
+@media (max-width: 900px){
+  .layout{grid-template-columns:minmax(0,1fr)}
+  .side{position:static}
+  .dock{position:fixed;left:0;right:0;bottom:0;z-index:30;border-radius:18px 18px 0 0;border-width:1px 0 0;
+    padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+    box-shadow:0 -8px 30px rgba(0,0,0,.12)}
+  body{padding-bottom:calc(160px + env(safe-area-inset-bottom,0px))}
+  h1{font-size:1.5rem}
+}
+@media (prefers-reduced-motion: reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <span class="mark" aria-hidden="true">
+      <svg viewBox="0 0 26 26"><rect x="2" y="10" width="2.8" height="6" rx="1.4"/><rect x="7" y="6" width="2.8" height="14" rx="1.4"/><rect x="12" y="8.5" width="2.8" height="9" rx="1.4"/><rect x="17" y="4" width="2.8" height="18" rx="1.4"/><rect x="22" y="10.5" width="2.4" height="5" rx="1.2"/></svg>
+    </span>
+    <h1>Эссе вслух</h1>
+  </header>
+
+  <main class="layout">
+    <section class="sheet" aria-label="Текст эссе">
+      <div class="sheet-head">
+        <div class="sheet-title"><span>Твоё эссе</span><span id="sampleBadge" class="badge" hidden>Пример</span></div>
+        <div class="tools"><span id="wordCount" class="meta"></span><button id="editBtn" class="btn sm" type="button">Изменить текст</button></div>
+      </div>
+      <div id="reader" class="reader" lang="en"></div>
+      <div id="editorWrap" class="editor-wrap" hidden>
+        <textarea id="editor" lang="en" spellcheck="true" placeholder="Вставь сюда своё эссе на английском…"></textarea>
+        <div class="editor-bar">
+          <span id="editorCount" class="meta"></span>
+          <div class="row">
+            <button id="sampleBtn" class="link-btn" type="button">Вставить пример</button>
+            <button id="clearBtn" class="btn sm" type="button">Очистить</button>
+            <button id="doneBtn" class="btn sm primary" type="button">Готово</button>
+          </div>
+        </div>
+      </div>
+      <div id="legend" class="legend">
+        <span class="lg"><span class="sw cur">word</span>говорить сейчас</span>
+        <span class="lg"><span class="sw ok">word</span>верно</span>
+        <span class="lg"><span class="sw close">word</span>неточно</span>
+        <span class="lg"><span class="sw bad">word</span>не так</span>
+        <span class="lg"><span class="sw skip">word</span>пропущено</span>
+        <span>Нажми на слово, чтобы послушать и потренировать его.</span>
+      </div>
+    </section>
+
+    <aside class="side">
+      <div id="dock" class="dock">
+        <div class="live" aria-live="polite"><span id="dot" class="dot"></span><span id="liveText" class="live-text">Готово</span><span id="engineTag" class="tag">Браузер</span></div>
+        <div class="btns">
+          <button id="listenBtn" class="btn big" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/></svg><span>Послушать</span></button>
+          <button id="readBtn" class="btn big primary" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z"/></svg><span>Читать сам</span></button>
+          <button id="stopBtn" class="btn big stop" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg><span id="stopLabel">Остановить</span></button>
+        </div>
+        <div id="startChip" class="start-chip" hidden>Начало с «<b id="startWord"></b>»<button id="startReset" class="x" type="button" aria-label="Начать с начала текста">×</button></div>
+        <p id="supportNote" class="hint" hidden>Проверка чтения в бесплатном режиме работает в Chrome, Edge или Safari. В этом браузере она доступна только с Azure.</p>
+        <button id="toResults" class="link-btn" type="button" hidden>Смотреть итоги ↓</button>
+      </div>
+
+      <div class="card settings">
+        <label for="voiceSel">Голос</label>
+        <select id="voiceSel"></select>
+        <label for="rate">Скорость голоса <output id="rateOut" for="rate">1.00×</output></label>
+        <input id="rate" type="range" min="0.6" max="1.3" step="0.05" value="1">
+        <p id="voiceHint" class="hint"></p>
+      </div>
+
+      <div class="card azcard">
+        <div class="az-head">
+          <div class="az-title"><b>Azure</b><span class="meta">Оценка каждого звука, беглости и интонации</span></div>
+          <label class="switch" title="Включить Azure"><input id="azOn" type="checkbox" aria-label="Использовать Azure"><span></span></label>
+        </div>
+        <div id="azBody" class="az-body" hidden>
+          <div class="field"><label for="azKey">Ключ</label><input id="azKey" type="password" autocomplete="off" spellcheck="false" placeholder="Ключ ресурса Speech"></div>
+          <div class="field"><label for="azRegion">Регион</label><input id="azRegion" type="text" autocomplete="off" spellcheck="false" placeholder="например, westeurope"></div>
+          <div class="row"><button id="azTest" class="btn sm" type="button">Проверить ключ</button><span id="azStatus" class="az-status" aria-live="polite"></span></div>
+          <p id="azUsage" class="hint"></p>
+          <details>
+            <summary>Как получить ключ бесплатно</summary>
+            <ol>
+              <li>Открой <a href="https://portal.azure.com" target="_blank" rel="noopener">portal.azure.com</a> и создай бесплатный аккаунт Microsoft Azure. Карта нужна для проверки, на тарифе Free F0 деньги не списываются.</li>
+              <li>Нажми «Создать ресурс», найди <b>Speech</b> (служба «Речь») и создай его. Тариф: <b>Free F0</b>, регион: например, <b>West Europe</b>.</li>
+              <li>Открой созданный ресурс, раздел «Ключи и конечная точка». Скопируй «Ключ 1» и «Расположение/регион».</li>
+              <li>Вставь их сюда и нажми «Проверить ключ».</li>
+            </ol>
+            <p>Бесплатно в месяц: 5 часов распознавания и 0,5 млн символов озвучки. Ключ хранится только в этом браузере.</p>
+          </details>
+        </div>
+      </div>
+
+      <div id="results" class="card results" aria-live="polite"></div>
+    </aside>
+  </main>
+</div>
+
+<div id="pop" class="pop" role="dialog" aria-label="Тренировка слова" hidden>
+  <div class="pop-head"><span id="popWord" class="pop-word" lang="en"></span><button id="popClose" class="x" type="button" aria-label="Закрыть">×</button></div>
+  <p id="popInfo" class="pop-info"></p>
+  <div id="popPh" class="ph-row" hidden></div>
+  <ul id="popPhNotes" class="ph-notes" hidden></ul>
+  <div class="row">
+    <button id="popHear" class="btn sm" type="button">Послушать</button>
+    <button id="popSay" class="btn sm primary" type="button">Произнести</button>
+  </div>
+  <p id="popRes" class="pop-res" aria-live="polite"></p>
+  <button id="popFrom" class="link-btn" type="button">Начинать отсюда</button>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+var SAMPLE = [
+  "Some people believe that university students should be free to study whatever they like, while others think they should only choose subjects that will be useful in the future, such as science and technology.",
+  "On the one hand, practical subjects clearly prepare graduates for the job market. Employers are constantly looking for engineers, programmers and medical specialists, and a degree in these fields often leads to a stable income.",
+  "On the other hand, students who follow their genuine interests tend to work harder and achieve better results. A motivated historian may contribute more to society than an unhappy engineer.",
+  "In my opinion, universities should allow students to choose freely, but they should also explain which careers each subject can lead to. This way, young people can make informed decisions about their future."
+].join('\n\n');
+
+// <pure> — word matching, no DOM
+var NUM = {zero:'0',one:'1',two:'2',three:'3',four:'4',five:'5',six:'6',seven:'7',eight:'8',nine:'9',ten:'10',eleven:'11',twelve:'12',thirteen:'13',fourteen:'14',fifteen:'15',sixteen:'16',seventeen:'17',eighteen:'18',nineteen:'19',twenty:'20',thirty:'30',forty:'40',fifty:'50',sixty:'60',seventy:'70',eighty:'80',ninety:'90',hundred:'100',thousand:'1000',million:'1000000'};
+var HOMO = {};
+[['their','there','theyre'],['to','too','2'],['for','four','4','fore'],['one','won','1'],['your','youre'],['whether','weather'],['hear','here'],['know','no'],['right','write'],['by','buy','bye'],['which','witch'],['whose','whos'],['new','knew'],['would','wood'],['through','threw'],['ok','okay'],['and','&'],['percent','%'],['vs','versus'],['weak','week'],['peace','piece'],['principal','principle'],['allowed','aloud'],['whole','hole'],['cite','site','sight']]
+  .forEach(function(g){ g.forEach(function(w){ HOMO[w] = g[0]; }); });
+var SPECIAL = {programme:'program',programmes:'programs',grey:'gray',practise:'practice',practised:'practiced',practising:'practicing',practises:'practices',mum:'mom',maths:'math',aeroplane:'airplane',aeroplanes:'airplanes',cheque:'check',tyre:'tire',tyres:'tires',jewellery:'jewelry',mould:'mold',plough:'plow',enrol:'enroll',fulfil:'fulfill',skilful:'skillful',ageing:'aging',judgement:'judgment'};
+var OUR_KEEP = {four:1,your:1,hour:1,pour:1,tour:1,flour:1,sour:1,dour:1,detour:1,contour:1,devour:1,amour:1,velour:1,scour:1};
+var FILLERS = {um:1,uh:1,er:1,erm:1,ah:1,hmm:1,mm:1,uhm:1,mhm:1};
+
+function normWord(s){
+  return String(s).toLowerCase()
+    .replace(/[‘’ʼ`´]/g, "'")
+    .replace(/[^a-z0-9'%&]/g, '')
+    .replace(/^'+|'+$/g, '');
+}
+function canon(n){
+  var w = n.replace(/'/g, '');
+  if (!w) return w;
+  if (SPECIAL[w]) w = SPECIAL[w];
+  if (NUM[w]) w = NUM[w];
+  if (HOMO[w]) return HOMO[w];
+  if (w.length > 4){
+    w = w.replace(/our(s|ed|ing|ite|ites|able|ably|ful|less|er|ers)?$/, function(m, suf, off){
+      return OUR_KEEP[w.slice(0, off) + 'our'] ? m : 'or' + (suf || '');
+    });
+    w = w.replace(/([a-z])is(e|es|ed|ing|ation|ations|er|ers)$/, '$1iz$2');
+    w = w.replace(/ys(e|es|ed|ing)$/, 'yz$1');
+    w = w.replace(/([bcdgpt])re(s)?$/, '$1er$2');
+    w = w.replace(/ogue(s)?$/, 'og$1');
+    w = w.replace(/([aeiou])ll(ed|ing|er|ers)$/, '$1l$2');
+    w = w.replace(/ence(s)?$/, 'ense$1');
+  }
+  return w;
+}
+function lev(a, b){
+  if (a === b) return 0;
+  var m = a.length, n = b.length, i, j;
+  if (!m) return n;
+  if (!n) return m;
+  var prev = new Array(n + 1), cur = new Array(n + 1), tmp;
+  for (j = 0; j <= n; j++) prev[j] = j;
+  for (i = 1; i <= m; i++){
+    cur[0] = i;
+    for (j = 1; j <= n; j++){
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a.charCodeAt(i - 1) === b.charCodeAt(j - 1) ? 0 : 1));
+    }
+    tmp = prev; prev = cur; cur = tmp;
+  }
+  return prev[n];
+}
+function similarity(a, b){ return a === b ? 1 : 1 - lev(a, b) / Math.max(a.length, b.length, 1); }
+var PC = new Map();
+function pairCost(r, h){
+  if (r === h) return 0;
+  var la = r.length, lb = h.length;
+  if (1 - Math.abs(la - lb) / Math.max(la, lb, 1) < 0.75) return 1;
+  var k = r + '|' + h, v = PC.get(k);
+  if (v === undefined){
+    v = similarity(r, h) >= 0.75 ? 0.5 : 1;
+    if (PC.size > 50000) PC.clear();
+    PC.set(k, v);
+  }
+  return v;
+}
+function hypTokens(t){
+  var out = [];
+  String(t).split(/[\s\-–—\/]+/).forEach(function(x){
+    var n = normWord(x);
+    if (!n || FILLERS[n]) return;
+    out.push({ raw: x.replace(/[^\w'%&]/g, '') || n, key: canon(n) });
+  });
+  return out;
+}
+/* Aligns recognised words (hyp) with the essay (ref keys) starting at `from`.
+   Costs: exact 0, similar 0.5, other 1, extra or skipped word 1. The end of the
+   reference stays open, so the result says how far the reader got. Each op keeps
+   the index of the recognised word it was paired with (h). */
+function align(hyp, ref, from, freeStart, preferLonger){
+  var n = hyp.length, rem = ref.length - from;
+  var m = Math.max(0, Math.min(rem, freeStart ? 600 : n * 2 + 8));
+  var out = { end: 0, ops: [], matches: 0, lastUsed: false, cost: 0 };
+  if (!n || !m) return out;
+  var W = m + 1, D = new Float64Array((n + 1) * W), C = new Float64Array(n * m), i, j, v, c;
+  for (j = 0; j <= m; j++) D[j] = freeStart ? 0 : j;
+  for (i = 1; i <= n; i++){
+    D[i * W] = i;
+    var hk = hyp[i - 1].key;
+    for (j = 1; j <= m; j++){
+      c = pairCost(ref[from + j - 1], hk);
+      C[(i - 1) * m + j - 1] = c;
+      v = D[(i - 1) * W + j - 1] + c;
+      var ins = D[(i - 1) * W + j] + 1; if (ins < v) v = ins;
+      var del = D[i * W + j - 1] + 1; if (del < v) v = del;
+      D[i * W + j] = v;
+    }
+  }
+  var best = 0, bc = Infinity;
+  for (j = 0; j <= m; j++){
+    v = D[n * W + j];
+    if (v < bc - 1e-9 || (preferLonger && Math.abs(v - bc) < 1e-9)){ bc = v; best = j; }
+  }
+  var ops = new Array(best), lastUsed = false;
+  i = n; j = best;
+  while (j > 0){
+    if (i === 0){ while (j > 0){ ops[j - 1] = { q: 'skip' }; j--; } break; }
+    c = C[(i - 1) * m + j - 1];
+    if (Math.abs(D[i * W + j] - (D[(i - 1) * W + j - 1] + c)) < 1e-9){
+      if (i === n) lastUsed = true;
+      ops[j - 1] = { q: c === 0 ? 'ok' : (c === 0.5 ? 'close' : 'bad'), heard: hyp[i - 1].raw, h: i - 1 };
+      i--; j--; continue;
+    }
+    if (Math.abs(D[i * W + j] - (D[i * W + j - 1] + 1)) < 1e-9){ ops[j - 1] = { q: 'skip' }; j--; continue; }
+    i--;
+  }
+  out.end = best; out.ops = ops; out.lastUsed = lastUsed; out.cost = bc;
+  out.matches = ops.filter(function(o){ return o.q === 'ok' || o.q === 'close'; }).length;
+  return out;
+}
+/* Drops unconfirmed words at the end of a phrase so a misheard tail cannot push
+   the reader's position forward; one substituted word right after the last match stays. */
+function trimTail(r){
+  var last = -1;
+  for (var k = r.ops.length - 1; k >= 0; k--){ var q = r.ops[k].q; if (q === 'ok' || q === 'close'){ last = k; break; } }
+  var keep = last + 1;
+  if (keep < r.ops.length && r.ops[keep].q === 'bad') keep++;
+  if (keep < r.ops.length){ r.ops = r.ops.slice(0, keep); r.end = keep; }
+  return r;
+}
+// </pure>
+
+/* ---------- helpers ---------- */
+function $(id){ return document.getElementById(id); }
+var store = {
+  get: function(k, d){ try { var v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set: function(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function clean(d){ return d.replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9%]+$/g, '') || d; }
+function plural(n, f){ var a = Math.abs(n) % 100, b = a % 10; if (a > 10 && a < 20) return f[2]; if (b > 1 && b < 5) return f[1]; if (b === 1) return f[0]; return f[2]; }
+function hash(s){ var h = 5381; for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+function num(v){ return typeof v === 'number' && isFinite(v) ? v : null; }
+
+var reader = $('reader'), editor = $('editor'), editorWrap = $('editorWrap'), editBtn = $('editBtn'), doneBtn = $('doneBtn'),
+    clearBtn = $('clearBtn'), sampleBtn = $('sampleBtn'), legend = $('legend'), listenBtn = $('listenBtn'), readBtn = $('readBtn'),
+    stopBtn = $('stopBtn'), stopLabel = $('stopLabel'), liveText = $('liveText'), dot = $('dot'), dock = $('dock'), engineTag = $('engineTag'),
+    voiceSel = $('voiceSel'), rateIn = $('rate'), rateOut = $('rateOut'), voiceHint = $('voiceHint'), resultsEl = $('results'),
+    wordCount = $('wordCount'), editorCount = $('editorCount'), sampleBadge = $('sampleBadge'), startChip = $('startChip'),
+    startWord = $('startWord'), startReset = $('startReset'), toResults = $('toResults'), supportNote = $('supportNote'),
+    azOn = $('azOn'), azBody = $('azBody'), azKey = $('azKey'), azRegion = $('azRegion'), azTest = $('azTest'), azStatus = $('azStatus'), azUsage = $('azUsage'),
+    pop = $('pop'), popWord = $('popWord'), popInfo = $('popInfo'), popPh = $('popPh'), popPhNotes = $('popPhNotes'), popHear = $('popHear'), popSay = $('popSay'),
+    popRes = $('popRes'), popFrom = $('popFrom'), popClose = $('popClose');
+
+var SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+var synth = window.speechSynthesis || null;
+var hasMic = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+var IS_IOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+var IS_MOBILE = IS_IOS || /Android/i.test(navigator.userAgent);
+var AC_ORIG = window.AudioContext, ACW_ORIG = window.webkitAudioContext;
+var AC0 = AC_ORIG || ACW_ORIG || null;
+var reduceMotion = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+function isDockFixed(){ return !!(window.matchMedia && matchMedia('(max-width: 900px)').matches); }
+
+var text = store.get('ev.text', SAMPLE) || SAMPLE;
+var units = [], keys = [], sentences = [];
+var mode = 'idle';            // idle | listen | read
+var startIdx = 0, pos = 0, readStart = 0;
+var S = null, L = null;       // reading session, listening session
+var wsVoices = [], voice = null, sel = { kind: 'ws', name: '' };
+var rate = parseFloat(store.get('ev.rate', 1)) || 1;
+var nativeWpm = null, textKey = '', lastRes = null;
+
+/* ---------- Azure settings ---------- */
+var AZ_SDK_URL = 'https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@1.51.0/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js';
+var AZ_VOICES = [
+  ['en-US-AndrewNeural', 'Andrew · мужской'], ['en-US-BrianNeural', 'Brian · мужской'], ['en-US-GuyNeural', 'Guy · мужской'], ['en-US-ChristopherNeural', 'Christopher · мужской'],
+  ['en-US-AvaNeural', 'Ava · женский'], ['en-US-EmmaNeural', 'Emma · женский'], ['en-US-JennyNeural', 'Jenny · женский'], ['en-US-AriaNeural', 'Aria · женский']
+];
+var AZ = { on: !!store.get('ev.az.on', false), key: String(store.get('ev.az.key', '') || ''), region: String(store.get('ev.az.region', '') || ''), loading: null };
+function engine(){ return AZ.on ? 'az' : 'ws'; }
+function azLoad(){
+  if (window.SpeechSDK) return Promise.resolve(window.SpeechSDK);
+  if (AZ.loading) return AZ.loading;
+  AZ.loading = new Promise(function(res, rej){
+    var sc = document.createElement('script');
+    sc.src = AZ_SDK_URL; sc.async = true;
+    sc.onload = function(){ if (window.SpeechSDK) res(window.SpeechSDK); else { AZ.loading = null; rej(new Error('load')); } };
+    sc.onerror = function(){ AZ.loading = null; rej(new Error('load')); };
+    document.head.appendChild(sc);
+  });
+  return AZ.loading;
+}
+function azConfig(sdk){
+  var cfg = sdk.SpeechConfig.fromSubscription(AZ.key, AZ.region);
+  cfg.speechRecognitionLanguage = 'en-US';
+  return cfg;
+}
+function azErrText(d, code){
+  d = String(d || '');
+  if (code === 1 || /401|authenticat|unauthori/i.test(d)) return 'Azure не принял ключ. Проверь ключ и регион.';
+  if (code === 8 || /403|forbidden/i.test(d)) return 'Azure запретил доступ. Проверь, что ключ от ресурса Speech.';
+  if (code === 3 || /429|too many|quota/i.test(d)) return 'Исчерпан бесплатный лимит Azure или слишком частые запросы. Подожди минуту.';
+  if (code === 4 || /connect|network|websocket|1006|failed to fetch/i.test(d)) return 'Нет связи с Azure. Проверь интернет и регион.';
+  if (/microphone|getusermedia|notallowed|permission/i.test(d)) return 'Нет доступа к микрофону. Разреши микрофон для этой страницы.';
+  return 'Ошибка Azure: ' + (d.slice(0, 140) || 'неизвестная');
+}
+function monthKey(){ var d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1); }
+function getUsage(){ var u = store.get('ev.az.usage', null); if (!u || u.m !== monthKey()) u = { m: monthKey(), sec: 0, chars: 0 }; return u; }
+function addUsage(sec, chars){ var u = getUsage(); u.sec += sec || 0; u.chars += chars || 0; store.set('ev.az.usage', u); renderUsage(); }
+function fmtK(n){ return n >= 1000 ? String(Math.round(n / 100) / 10).replace('.', ',') + ' тыс.' : String(Math.round(n)); }
+function renderUsage(){
+  var u = getUsage();
+  azUsage.textContent = 'Использовано в этом месяце (по подсчёту этой страницы): распознавание ' + Math.round(u.sec / 60) + ' из 300 мин, озвучка ' + fmtK(u.chars) + ' из 500 тыс. символов.';
+}
+function setAzStatus(t, cls){ azStatus.textContent = t; azStatus.className = 'az-status' + (cls ? ' ' + cls : ''); }
+
+function setLive(t, st){ liveText.textContent = t; dot.className = 'dot' + (st ? ' ' + st : ''); }
+
+/* ---------- building the text ---------- */
+var ABBR = {'mr.':1,'mrs.':1,'ms.':1,'dr.':1,'prof.':1,'st.':1,'e.g.':1,'i.e.':1,'etc.':1,'vs.':1,'approx.':1,'no.':1,'jr.':1,'sr.':1};
+function endsSentence(chunk){
+  var c = chunk.toLowerCase().replace(/^["'“‘(\[]+/, '').replace(/["'”’)\]]+$/, '');
+  if (!/[.!?…]$/.test(c)) return false;
+  if (ABBR[c]) return false;
+  if (/^[a-z]\.$/.test(c)) return false;
+  return true;
+}
+function build(){
+  closePop();
+  units = []; sentences = []; reader.textContent = '';
+  var paras = text.replace(/\r/g, '').split(/\n+/).map(function(p){ return p.trim(); }).filter(Boolean);
+  paras.forEach(function(p){
+    var pEl = document.createElement('p');
+    reader.appendChild(pEl);
+    var s = null, len = 0, ended = true;
+    function open(){
+      s = { start: units.length, end: units.length, el: document.createElement('span'), text: '' };
+      s.el.className = 's';
+      pEl.appendChild(s.el);
+      sentences.push(s);
+      len = 0;
+    }
+    p.split(/\s+/).filter(Boolean).forEach(function(chunk){
+      if (ended){ if (s) pEl.appendChild(document.createTextNode(' ')); open(); ended = false; }
+      else { s.el.appendChild(document.createTextNode(' ')); len += 1; }
+      chunk.split(/([\-–—\/]+)/).forEach(function(part){
+        if (!part) return;
+        var n = /^[\-–—\/]+$/.test(part) ? '' : normWord(part);
+        if (!n){ s.el.appendChild(document.createTextNode(part)); len += part.length; return; }
+        var el = document.createElement('span');
+        el.className = 'w'; el.textContent = part; el.dataset.i = units.length;
+        s.el.appendChild(el);
+        units.push({ i: units.length, disp: part, n: n, key: canon(n), el: el, s: s, off: len, q: null, heard: '', az: null });
+        len += part.length;
+        s.end = units.length;
+      });
+      ended = endsSentence(chunk);
+    });
+  });
+  sentences = sentences.filter(function(s){ return s.end > s.start; });
+  sentences.forEach(function(s, i){ s.text = s.el.textContent; s.idx = i; });
+  keys = units.map(function(u){ return u.key; });
+  textKey = hash(keys.join(' '));
+  nativeWpm = store.get('ev.native.' + textKey, null);
+  wordCount.textContent = units.length + ' ' + plural(units.length, ['слово', 'слова', 'слов']);
+  sampleBadge.hidden = text.trim() !== SAMPLE.trim();
+  setStart(0);
+  lastRes = null;
+  renderResults(null);
+  updateEngineUI();
+  setLive(units.length ? 'Сначала послушай, потом прочитай сам.' : 'Добавь текст эссе.', '');
+}
+/* Text from unit `from` up to the end of the sentence that holds unit `to - 1`
+   (or the end of the essay), plus where each word sits in it. */
+function speakPlan(from, to){
+  to = to == null ? units.length : to;
+  var parts = [], idx = [], off = [], len = 0, i = from;
+  while (i < to){
+    var u = units[i], sObj = u.s, start = u.off, piece = sObj.text.slice(start);
+    if (parts.length){ parts.push(' '); len += 1; }
+    for (var j = i; j < sObj.end; j++){ idx.push(j); off.push(len + units[j].off - start); }
+    parts.push(piece); len += piece.length;
+    i = sObj.end;
+  }
+  return { text: parts.join(''), idx: idx, off: off };
+}
+/* Splits the text into pieces for Azure: a short first piece so the voice starts
+   quickly, then pieces of a few sentences each. */
+function azParts(from){
+  var parts = [], i = from, limit = 200;
+  while (i < units.length){
+    var a = i, chars = 0;
+    while (i < units.length){
+      var s = units[i].s;
+      chars += s.text.length - (i === a ? units[i].off : 0);
+      i = s.end;
+      if (chars >= limit) break;
+    }
+    parts.push(speakPlan(a, i));
+    limit = 600;
+  }
+  return parts;
+}
+function unitAt(plan, o){
+  var lo = 0, hi = plan.off.length - 1, ans = -1;
+  if (o < 0) return -1;
+  while (lo <= hi){ var mid = (lo + hi) >> 1; if (plan.off[mid] <= o){ ans = mid; lo = mid + 1; } else hi = mid - 1; }
+  return ans < 0 ? -1 : plan.idx[ans];
+}
+
+function setQ(u, q, heard){
+  u.q = q || null; u.heard = heard || '';
+  var cl = u.el.classList;
+  cl.remove('ok', 'close', 'bad', 'skip');
+  if (q) cl.add(q);
+  var t = '';
+  if (q && u.az && u.az.acc != null) t = 'Точность произношения: ' + Math.round(u.az.acc) + '%';
+  else if ((q === 'bad' || q === 'close') && u.heard && canon(normWord(u.heard)) !== u.key) t = 'Услышано: «' + u.heard + '»';
+  else if (q === 'close') t = 'Распознаватель не был уверен в этом слове';
+  else if (q === 'skip') t = 'Пропущено';
+  if (t) u.el.title = t; else u.el.removeAttribute('title');
+}
+
+var curEl = null, lastScroll = 0;
+function setCursor(i){
+  var el = (i >= 0 && i < units.length) ? units[i].el : null;
+  if (el === curEl) return;
+  if (curEl) curEl.classList.remove('cur');
+  curEl = el;
+  if (el){ el.classList.add('cur'); keepVisible(el); }
+}
+function keepVisible(el){
+  var r = el.getBoundingClientRect();
+  var bottomPad = isDockFixed() ? dock.offsetHeight + 48 : 72;
+  if (r.top < 72 || r.bottom > window.innerHeight - bottomPad){
+    var now = performance.now();
+    if (now - lastScroll < 350) return;
+    lastScroll = now;
+    window.scrollTo({ top: Math.max(0, window.scrollY + r.top - window.innerHeight * 0.33), behavior: reduceMotion ? 'auto' : 'smooth' });
+  }
+}
+
+function setStart(i){
+  if (units[startIdx]) units[startIdx].el.classList.remove('start');
+  startIdx = Math.max(0, Math.min(i, units.length - 1));
+  startChip.hidden = !(startIdx > 0);
+  if (startIdx > 0){ startWord.textContent = clean(units[startIdx].disp); units[startIdx].el.classList.add('start'); }
+}
+
+function setButtons(){
+  var busy = mode !== 'idle';
+  listenBtn.hidden = busy; readBtn.hidden = busy; stopBtn.hidden = !busy;
+  stopLabel.textContent = mode === 'read' ? 'Закончить' : 'Остановить';
+}
+function updateEngineUI(){
+  var az = engine() === 'az';
+  engineTag.textContent = az ? 'Azure' : 'Браузер';
+  engineTag.className = 'tag' + (az ? ' az' : '');
+  readBtn.disabled = !units.length || (az ? !hasMic : !SR);
+  listenBtn.disabled = !units.length || (sel.kind === 'az' ? false : !synth);
+  var iosFree = IS_IOS && !az && !!SR;
+  supportNote.hidden = !(iosFree || (!az && !SR));
+  supportNote.textContent = iosFree
+    ? 'На iPhone встроенное распознавание Safari часто обрывается. Для чтения лучше включить Azure.'
+    : 'Проверка чтения в бесплатном режиме работает в Chrome, Edge или Safari. В этом браузере она доступна только с Azure.';
+  popSay.disabled = az ? !hasMic : !SR;
+}
+
+/* ---------- wake lock ---------- */
+var wl = null;
+function wake(on){
+  try {
+    if (on){ if (!wl && navigator.wakeLock) navigator.wakeLock.request('screen').then(function(x){ wl = x; }, function(){}); }
+    else if (wl){ wl.release().catch(function(){}); wl = null; }
+  } catch (e) { wl = null; }
+}
+
+/* ---------- voices ---------- */
+function prettyVoice(v){
+  return v.name.replace(/^Microsoft\s+/, '').replace(/\s*-\s*English\s*\(United States\)/i, '')
+    .replace(/Online\s*/i, '').replace(/\s*\(Natural\)/i, ' · Natural').replace(/\s+/g, ' ').trim();
+}
+function loadVoices(){
+  var all = synth ? synth.getVoices() : [];
+  var list = all.filter(function(v){ return /^en[-_]US$/i.test(v.lang); });
+  if (!list.length) list = all.filter(function(v){ return /^en/i.test(v.lang); });
+  function rank(v){
+    if (/natural|neural/i.test(v.name)) return 0;
+    if (/online/i.test(v.name)) return 1;
+    if (/google/i.test(v.name)) return 2;
+    if (/(samantha|alex|aria|jenny|guy|ava|andrew|emma|brian|zira|david|mark)/i.test(v.name)) return 3;
+    return 4;
+  }
+  list.sort(function(a, b){ return rank(a) - rank(b) || a.name.localeCompare(b.name); });
+  wsVoices = list;
+  var saved = store.get('ev.voiceSel', null);
+  if (!saved){ var old = store.get('ev.voice', ''); saved = old ? 'ws:' + old : ''; }
+  voiceSel.innerHTML = '';
+  var g1 = document.createElement('optgroup');
+  g1.label = 'Голоса браузера';
+  if (list.length){
+    list.forEach(function(v){ var o = document.createElement('option'); o.value = 'ws:' + v.name; o.textContent = prettyVoice(v); g1.appendChild(o); });
+  } else {
+    var o0 = document.createElement('option'); o0.value = 'ws:'; o0.textContent = synth ? 'Голос по умолчанию' : 'Голоса браузера недоступны'; g1.appendChild(o0);
+  }
+  voiceSel.appendChild(g1);
+  if (AZ.on){
+    var g2 = document.createElement('optgroup');
+    g2.label = 'Azure';
+    AZ_VOICES.forEach(function(v){ var o = document.createElement('option'); o.value = 'az:' + v[0]; o.textContent = v[1]; g2.appendChild(o); });
+    voiceSel.appendChild(g2);
+  }
+  var values = Array.prototype.map.call(voiceSel.options, function(o){ return o.value; });
+  var val = values.indexOf(saved) >= 0 ? saved : values[0];
+  voiceSel.value = val;
+  applyVoice(val);
+}
+function applyVoice(val){
+  val = val || 'ws:';
+  if (val.indexOf('az:') === 0){ sel = { kind: 'az', name: val.slice(3) }; voice = null; }
+  else {
+    var nm = val.slice(3); voice = null;
+    for (var k = 0; k < wsVoices.length; k++) if (wsVoices[k].name === nm){ voice = wsVoices[k]; break; }
+    sel = { kind: 'ws', name: nm };
+  }
+  if (sel.kind === 'az') voiceHint.textContent = 'Голос Azure звучит стабильно и точно подсвечивает слова. Озвучка эссе тратит около ' + fmtK(text.length) + ' символов из бесплатного лимита.';
+  else if (!synth) voiceHint.textContent = 'Этот браузер не умеет читать текст вслух.';
+  else if (!wsVoices.length) voiceHint.textContent = 'Голоса браузера ещё загружаются.';
+  else voiceHint.textContent = wsVoices.some(function(v){ return /natural|neural/i.test(v.name); })
+    ? 'Голоса Natural звучат живее всего. Если голос сбивается, включи Azure и выбери голос оттуда.'
+    : 'Самые живые голоса (Aria, Jenny, Guy) есть в браузере Microsoft Edge.';
+  updateEngineUI();
+}
+
+/* ---------- listening ---------- */
+function listenCursor(i){
+  setCursor(i);
+  var l = L;
+  if (!l || !units[i]) return;
+  if (i + 1 > l.last) l.last = i + 1;
+  var sEl = units[i].s.el;
+  if (l.sEl !== sEl){ if (l.sEl) l.sEl.classList.remove('s-cur'); l.sEl = sEl; sEl.classList.add('s-cur'); }
+  setLive('Слушаем · предложение ' + (units[i].s.idx + 1) + ' из ' + sentences.length, 'listen');
+}
+function listenFrom(from){
+  if (!units.length) return;
+  if (sel.kind === 'az'){
+    if (!AZ.key || !AZ.region){ setLive('Укажи ключ и регион Azure или выбери голос браузера.', 'warn'); return; }
+    azListen(from);
+  } else wsListen(from);
+}
+function endListen(natural){
+  var l = L; if (!l) return;
+  L = null; mode = 'idle';
+  cancelAnimationFrame(l.raf); clearTimeout(l.timer);
+  if (l.kind === 'az'){
+    (l.srcs || []).forEach(function(src){ try { src.onended = null; src.stop(); } catch (e) {} });
+  } else {
+    try { if (synth && (synth.speaking || synth.pending)) synth.cancel(); } catch (e) {}
+  }
+  if (l.sEl) l.sEl.classList.remove('s-cur');
+  setCursor(-1);
+  if (l.t0 && !l.rateChanged){
+    var words = l.last - l.from, min = (performance.now() - l.t0) / 60000;
+    if (words >= 30 && min > 0.15){
+      var w = Math.round(words / min / l.rate0);
+      if (w >= 90 && w <= 230){ nativeWpm = w; store.set('ev.native.' + textKey, w); }
+    }
+  }
+  wake(false); setButtons();
+  setLive(natural ? 'Дослушали. Теперь нажми «Читать сам».' : 'Остановлено.', natural ? 'done' : '');
+}
+
+/* Browser voices. Online voices (Edge "Natural") are sometimes slow to answer or drop a
+   sentence: a sentence that fails or ends suspiciously early is repeated, never skipped. */
+function makeChunks(from){
+  var out = [], k = from;
+  while (k < units.length){
+    var s = units[k].s, a = k, b = k, chars = 0;
+    while (b < s.end){
+      chars += units[b].disp.length + 1; b++;
+      if (b < s.end && ((chars > 110 && /[,;:]$/.test(units[b - 1].disp)) || chars > 220)) break;
+    }
+    out.push({ s: s, a: a, b: b });
+    k = b;
+  }
+  return out;
+}
+function chunkText(c){
+  var base = units[c.a].off, end = c.b < c.s.end ? units[c.b].off : c.s.text.length;
+  return c.s.text.slice(base, end);
+}
+function wsListen(from){
+  if (!synth){ setLive('Этот браузер не умеет читать текст вслух.', 'warn'); return; }
+  stopAll(); closePop();
+  mode = 'listen';
+  var l = L = { kind: 'ws', chunks: makeChunks(from), from: from, last: from, t0: 0, raf: 0, cur: null, sEl: null, rate0: rate, rateChanged: false, timer: 0, tries: 0 };
+  setButtons(); wake(true);
+  var busy = false;
+  try { busy = synth.speaking || synth.pending; synth.cancel(); } catch (e) {}
+  setLive('Готовлю голос…', 'listen');
+  // Chromium drops speech queued right after cancel(), so give it a moment.
+  l.timer = setTimeout(function(){ playChunk(0); }, busy ? 350 : 80);
+}
+function playChunk(ci){
+  var l = L;
+  if (mode !== 'listen' || !l || l.kind !== 'ws') return;
+  if (ci >= l.chunks.length){ endListen(true); return; }
+  var c = l.chunks[ci], base = units[c.a].off, txt = chunkText(c);
+  var u = new SpeechSynthesisUtterance(txt);
+  if (voice){ u.voice = voice; u.lang = voice.lang; } else u.lang = 'en-US';
+  u.rate = rate;
+  var queued = performance.now(), started = 0, gotBoundary = false, finished = false;
+  l.cur = u;
+  listenCursor(c.a);
+  function at(ch){ var k = c.a; for (var x = c.a; x < c.b; x++){ if (units[x].off - base <= ch) k = x; else break; } return k; }
+  function fail(){
+    if (finished) return;
+    finished = true;
+    if (L !== l || l.cur !== u) return;
+    cancelAnimationFrame(l.raf); clearTimeout(l.timer);
+    l.tries++;
+    try { synth.cancel(); } catch (e) {}
+    if (l.tries <= 2){
+      setLive('Голос не ответил, повторяю предложение…', 'warn');
+      l.timer = setTimeout(function(){ playChunk(ci); }, 450);
+    } else {
+      endListen(false);
+      setLive('Голос перестал отвечать. Выбери другой голос' + (AZ.on ? '' : ' или включи Azure') + '.', 'warn');
+    }
+  }
+  u.onstart = function(){
+    if (L !== l || l.cur !== u) return;
+    started = performance.now();
+    if (!l.t0) l.t0 = started;
+    var tick = function(){
+      if (L !== l || l.cur !== u || finished) return;
+      if (!gotBoundary) listenCursor(at((performance.now() - started) / 1000 * 15.5 * u.rate));
+      l.raf = requestAnimationFrame(tick);
+    };
+    l.raf = requestAnimationFrame(tick);
+  };
+  u.onboundary = function(e){
+    if (L !== l || l.cur !== u || finished) return;
+    if (e.name && e.name !== 'word') return;
+    gotBoundary = true;
+    listenCursor(at(e.charIndex));
+  };
+  u.onend = function(){
+    if (finished || L !== l || l.cur !== u) return;
+    var elapsed = (performance.now() - (started || queued)) / 1000;
+    var expected = txt.length / (15.5 * u.rate);
+    if (c.b - c.a >= 4 && !gotBoundary && elapsed < expected * 0.25){ fail(); return; }
+    finished = true;
+    cancelAnimationFrame(l.raf); clearTimeout(l.timer);
+    l.tries = 0;
+    if (c.b > l.last) l.last = c.b;
+    playChunk(ci + 1);
+  };
+  u.onerror = function(e){
+    if (e && (e.error === 'interrupted' || e.error === 'canceled')) return;
+    fail();
+  };
+  clearTimeout(l.timer);
+  l.timer = setTimeout(function(){ if (!started && !synth.speaking) fail(); }, 8000);
+  synth.speak(u);
+}
+
+/* Azure voices. Each piece of text is synthesised to audio data and played through
+   Web Audio, which works the same on laptops and on iPhone (Safari there refuses to
+   start sound that does not follow a tap directly). Words are highlighted from the
+   timing Azure reports for each of them. */
+var playCtx = null;
+function getPlayCtx(){
+  // Must run inside a tap or click: that is what allows sound on iPhone.
+  if (!AC0) return null;
+  if (!playCtx || playCtx.state === 'closed'){ try { playCtx = new AC0(); } catch (e) { playCtx = null; return null; } }
+  try { if (playCtx.state !== 'running') playCtx.resume(); } catch (e) {}
+  try {
+    var b = playCtx.createBuffer(1, 1, 22050), src = playCtx.createBufferSource();
+    src.buffer = b; src.connect(playCtx.destination); src.start(0);
+  } catch (e) {}
+  return playCtx;
+}
+function decodeAudio(ctx, data){
+  return new Promise(function(res, rej){
+    try {
+      var p = ctx.decodeAudioData(data.slice(0), res, rej);
+      if (p && p.then) p.then(res, rej);
+    } catch (e) { rej(e); }
+  });
+}
+function azSsml(t, voiceName, r){
+  var safe = t.replace(/[&<>]/g, ' ');
+  var pct = Math.round((r - 1) * 100);
+  var pre = '<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US"><voice name="' + voiceName + '"><prosody rate="' + (pct >= 0 ? '+' : '') + pct + '%">';
+  return { ssml: pre + safe + '</prosody></voice></speak>', pre: pre.length };
+}
+function azSynth(sdk, plan, r){
+  return new Promise(function(resolve, reject){
+    var cfg = azConfig(sdk);
+    try { cfg.speechSynthesisOutputFormat = sdk.SpeechSynthesisOutputFormat.Audio24Khz48KBitRateMonoMp3; } catch (e) {}
+    var sy = new sdk.SpeechSynthesizer(cfg, null);
+    var sx = azSsml(plan.text, sel.name, r), bounds = [];
+    var nextU = plan.idx.length ? plan.idx[0] : -1, lastU = plan.idx.length ? plan.idx[plan.idx.length - 1] : -1;
+    function matches(i, k){ return i >= 0 && (!k || keys[i] === k || similarity(keys[i], k) >= 0.6); }
+    sy.wordBoundary = function(_, e){
+      if (nextU < 0) return;
+      if (e.boundaryType && e.boundaryType !== sdk.SpeechSynthesisBoundaryType.Word) return;
+      var k = canon(normWord(e.text || ''));
+      var i = unitAt(plan, e.textOffset - sx.pre);
+      if (!matches(i, k)) i = unitAt(plan, e.textOffset);
+      if (!matches(i, k) || i < nextU - 1){
+        i = -1;
+        for (var j = nextU; j <= Math.min(lastU, nextU + 5); j++){ if (matches(j, k)){ i = j; break; } }
+        if (i < 0) return;
+      }
+      nextU = i + 1;
+      bounds.push({ t: e.audioOffset / 1e7, i: i });
+    };
+    addUsage(0, plan.text.length);
+    sy.speakSsmlAsync(sx.ssml, function(result){
+      try { sy.close(); } catch (e) {}
+      if (result.reason === sdk.ResultReason.Canceled || !result.audioData || !result.audioData.byteLength){
+        reject(new Error(azErrText(result.errorDetails)));
+        return;
+      }
+      resolve({ audio: result.audioData, bounds: bounds });
+    }, function(err){
+      try { sy.close(); } catch (e) {}
+      reject(new Error(azErrText(err)));
+    });
+  });
+}
+function azListen(from){
+  stopAll(); closePop();
+  var ctx = getPlayCtx();
+  if (!ctx){ setLive('Этот браузер не умеет проигрывать звук Azure.', 'warn'); return; }
+  mode = 'listen';
+  var l = L = { kind: 'az', from: from, last: from, t0: 0, raf: 0, sEl: null, rate0: rate, rateChanged: false, timer: 0,
+    ctx: ctx, srcs: [], bounds: [], bp: 0, nextAt: 0, allQueued: false };
+  setButtons(); wake(true);
+  setLive('Готовлю озвучку Azure…', 'listen');
+  listenCursor(from);
+  var parts = azParts(from), pi = 0;
+  function fail(msg){ if (L !== l) return; endListen(false); setLive(msg, 'warn'); }
+  azLoad().then(function(sdk){
+    if (L !== l) return;
+    var tick = function(){
+      if (L !== l) return;
+      if (l.t0){
+        var t = ctx.currentTime, b = l.bounds;
+        while (l.bp < b.length && b[l.bp].t <= t) l.bp++;
+        if (l.bp > 0) listenCursor(b[l.bp - 1].i);
+      }
+      l.raf = requestAnimationFrame(tick);
+    };
+    l.raf = requestAnimationFrame(tick);
+    function next(){
+      if (L !== l) return;
+      if (pi >= parts.length){ l.allQueued = true; return; }
+      var part = parts[pi++];
+      azSynth(sdk, part, rate).then(function(res){
+        if (L !== l) return null;
+        return decodeAudio(ctx, res.audio).then(function(buf){
+          if (L !== l) return;
+          var at = Math.max(ctx.currentTime + 0.06, l.nextAt);
+          var src = ctx.createBufferSource();
+          src.buffer = buf; src.connect(ctx.destination); src.start(at);
+          l.srcs.push(src);
+          res.bounds.forEach(function(x){ l.bounds.push({ t: at + x.t, i: x.i }); });
+          l.nextAt = at + buf.duration;
+          if (!l.t0) l.t0 = performance.now() + (at - ctx.currentTime) * 1000;
+          src.onended = function(){
+            if (L === l && l.allQueued && src === l.srcs[l.srcs.length - 1]){ l.last = units.length; endListen(true); }
+          };
+          next();
+        });
+      }).catch(function(err){ fail(err && err.message ? err.message : 'Не удалось получить озвучку Azure.'); });
+    }
+    next();
+  }, function(){ fail('Не удалось загрузить библиотеку Azure. Проверь интернет.'); });
+}
+function speakWord(t){
+  if (mode === 'listen') endListen(false);
+  if (sel.kind === 'az' && AZ.key && AZ.region){
+    var ctx = getPlayCtx();
+    if (ctx){
+      azLoad().then(function(sdk){
+        return azSynth(sdk, { text: t, idx: [], off: [] }, Math.min(rate, 0.85));
+      }).then(function(res){
+        return decodeAudio(ctx, res.audio).then(function(buf){
+          var src = ctx.createBufferSource();
+          src.buffer = buf; src.connect(ctx.destination); src.start(ctx.currentTime + 0.03);
+        });
+      }).catch(function(err){ setPopRes(err && err.message ? err.message : 'Не удалось получить озвучку Azure.', 'bad'); });
+      return;
+    }
+  }
+  wsSpeakWord(t);
+}
+function wsSpeakWord(t){
+  if (!synth) return;
+  try { synth.cancel(); } catch (e) {}
+  var u = new SpeechSynthesisUtterance(t);
+  if (voice){ u.voice = voice; u.lang = voice.lang; } else u.lang = 'en-US';
+  u.rate = Math.min(rate, 0.85);
+  setTimeout(function(){ synth.speak(u); }, 80);
+}
+/* iPhone allows speech only after it was started by a tap once. */
+function unlockSpeech(){
+  if (!IS_IOS || !synth || unlockSpeech.done) return;
+  try { var u = new SpeechSynthesisUtterance(' '); u.volume = 0; synth.speak(u); unlockSpeech.done = true; } catch (e) {}
+}
+/* iPhone also keeps the microphone's audio processing paused unless it was set up by a
+   tap. Azure creates that audio context a moment later, so one prepared during the tap
+   is handed over to it. */
+var micRestore = 0;
+function primeMic(){
+  if (!IS_IOS || !AC0 || engine() !== 'az') return;
+  var ctx;
+  try {
+    var sc = navigator.mediaDevices && navigator.mediaDevices.getSupportedConstraints ? navigator.mediaDevices.getSupportedConstraints() : {};
+    ctx = sc.sampleRate ? new AC0({ sampleRate: 16000 }) : new AC0();
+  } catch (e) { try { ctx = new AC0(); } catch (e2) { return; } }
+  try { ctx.resume(); } catch (e) {}
+  var used = false;
+  function restore(){
+    clearTimeout(micRestore);
+    if (AC_ORIG) window.AudioContext = AC_ORIG;
+    if (ACW_ORIG) window.webkitAudioContext = ACW_ORIG;
+  }
+  function Handover(){ used = true; restore(); return ctx; }
+  restore();
+  if (AC_ORIG) window.AudioContext = Handover;
+  if (ACW_ORIG) window.webkitAudioContext = Handover;
+  micRestore = setTimeout(function(){ restore(); if (!used){ try { ctx.close(); } catch (e) {} } }, 15000);
+}
+
+/* ---------- reading: tracking ---------- */
+var provEls = [];
+function clearProvisional(){ provEls.forEach(function(el){ el.classList.remove('heard'); }); provEls = []; }
+function showProvisional(t){
+  clearProvisional();
+  var cur = pos, hyp = hypTokens(t);
+  if (hyp.length && pos < units.length){
+    var r = align(hyp, keys, pos, false, false), used = false;
+    if (r.matches > 0){
+      r.ops.forEach(function(op, k){
+        if (op.q === 'ok' || op.q === 'close'){ var el = units[pos + k].el; el.classList.add('heard'); provEls.push(el); }
+      });
+      cur = pos + r.end;
+      used = r.lastUsed;
+    }
+    // While reading flows, a word reported half-spoken ("subj" for "subjects") counts.
+    var last = hyp[hyp.length - 1].key, flowing = S && S.advT.length >= 2;
+    if (!used && flowing && cur < units.length && last.length >= 3 && keys[cur].length >= 5 && keys[cur] !== last && keys[cur].indexOf(last) === 0){
+      var pe = units[cur].el; pe.classList.add('heard'); provEls.push(pe); cur++;
+    }
+  }
+  advanceHeard(cur);
+}
+/* The recogniser reports words roughly half a second after they are spoken. While the
+   reader moves steadily, the marker makes up for that delay and sits on the word being
+   started. When the reader slows down or stops, it goes back to the next word to say. */
+var LAT = 0.45, LEAD_MAX = 2;
+function advanceHeard(p){
+  var s = S;
+  if (!s){ setCursor(p); return; }
+  var now = performance.now();
+  if (p > s.top){
+    if (s.lastAdv){
+      var d = (now - s.lastAdv) / 1000;
+      if (d < 1.2){ var k = Math.exp(-d / 3); s.aw = s.aw * k + Math.min(6, p - s.top); s.at = s.at * k + d; }
+    }
+    s.top = p; s.lastAdv = now; s.advT.push(now);
+  }
+  s.heard = p;
+}
+function paceOf(s){ var sp = s.at > 0.6 ? s.aw / s.at : 2.3; return Math.min(5, Math.max(1.2, sp)); }
+function tickRead(){
+  var s = S;
+  if (!s || mode !== 'read') return;
+  var now = performance.now();
+  while (s.advT.length && now - s.advT[0] > 2000) s.advT.shift();
+  var dt = s.lastAdv ? (now - s.lastAdv) / 1000 : 99;
+  var steady = s.advT.length >= 3 && dt < 0.55;
+  var u = units[s.heard], target = s.heard;
+  if (u && steady && !(s.heard > readStart && s.heard === u.s.start)){
+    var ext = Math.floor(paceOf(s) * (LAT + Math.min(dt, 0.35)) + 0.15);
+    target = Math.min(s.heard + Math.min(LEAD_MAX, ext), u.s.end);
+  }
+  if (steady){ if (target > s.shown) s.shown = target; }
+  else if (dt > 0.7) s.shown = s.heard;
+  if (s.shown < s.heard) s.shown = s.heard;
+  if (s.shown > s.heard + LEAD_MAX) s.shown = s.heard + LEAD_MAX;
+  setCursor(Math.min(s.shown, units.length - 1));
+  s.raf = requestAnimationFrame(tickRead);
+}
+function tally(a, b){
+  var c = { ok: 0, close: 0, bad: 0, skip: 0 };
+  for (var k = a; k < b; k++){ var q = units[k].q; if (q) c[q]++; }
+  return c;
+}
+function wpmOf(s, c){
+  var spoken = c.ok + c.close + c.bad;
+  if (!s.t0 || spoken < 5) return null;
+  var min = (s.tLast - s.t0 + 700) / 60000;
+  if (min < 0.12) return null;
+  return Math.round(spoken / min);
+}
+function updateLive(){
+  if (mode !== 'read' || !S) return;
+  var s = S, c = tally(readStart, pos), att = c.ok + c.close + c.bad + c.skip;
+  if (!att){ setLive('Говори, я слушаю…', 'rec'); return; }
+  var prog = (pos - readStart) + '/' + (units.length - readStart);
+  if (s.kind === 'az'){
+    var a = 0, d = 0; s.azW.forEach(function(w){ a += w.acc * w.dur; d += w.dur; });
+    setLive((d ? 'точность ' + Math.round(a / d) + '%' : 'слушаю') + ' · ' + prog, 'rec');
+    return;
+  }
+  var sc = Math.round((c.ok + 0.5 * c.close) / att * 100), w = wpmOf(s, c);
+  setLive(sc + '% · ' + (w ? w : '—') + ' сл/мин · ' + prog, 'rec');
+}
+function newSession(from, kind){
+  return { kind: kind, active: true, t0: 0, tLast: 0, pauses: 0, interim: '', rec: null, finalized: false, errMsg: '', fin: 0,
+    heard: from, top: from, shown: from, lastAdv: 0, aw: 0, at: 0, advT: [], raf: 0,
+    azW: [], azSeg: [], azFirst: -1, azLast: -1, azPrevEnd: -1, azPauses: 0, azStartT: 0 };
+}
+function beginRead(from, kind){
+  stopAll(); closePop();
+  units.forEach(function(u){ u.az = null; setQ(u, null); });
+  mode = 'read'; readStart = from; pos = from;
+  var s = S = newSession(from, kind);
+  toResults.hidden = true;
+  setButtons(); setCursor(pos); wake(true);
+  s.raf = requestAnimationFrame(tickRead);
+  return s;
+}
+function readFrom(from){
+  if (!units.length) return;
+  if (engine() === 'az') azRead(from); else wsRead(from);
+}
+function onSpeech(s){
+  var now = performance.now();
+  if (!s.t0) s.t0 = now; else if (now - s.tLast > 2000) s.pauses++;
+  s.tLast = now;
+}
+
+/* ---------- reading: free browser recognition ---------- */
+function wsRead(from){
+  if (!SR){ setLive('Проверка чтения работает в Chrome, Edge или Safari. Или включи Azure.', 'warn'); return; }
+  var s = beginRead(from, 'ws');
+  setLive('Говори, я слушаю…', 'rec');
+  startRec(s);
+}
+/* Picks the recognition alternative that best fits the essay. A word found only in a
+   lower-ranked alternative counts as "неточно": the recogniser was not sure about it. */
+function commitWs(alts){
+  if (pos >= units.length || !alts.length) return;
+  var best = null, top = null;
+  for (var a = 0; a < alts.length; a++){
+    var hyp = hypTokens(alts[a]);
+    if (!hyp.length) continue;
+    var r = align(hyp, keys, pos, false, true);
+    r.alt = a;
+    if (a === 0) top = r;
+    if (!best || r.matches > best.matches) best = r;
+  }
+  if (!best) return;
+  if (best.matches === 0){
+    var hyp0 = hypTokens(alts[0]);
+    if (hyp0.length < 3) return;
+    var r2 = align(hyp0, keys, pos, true, false);
+    if (r2.matches < Math.max(2, Math.ceil(hyp0.length * 0.6))) return;
+    r2.alt = 0; best = r2; top = r2;
+  }
+  trimTail(best);
+  best.ops.forEach(function(op, k){
+    var q = op.q, heard = op.heard;
+    if (best.alt > 0 && (q === 'ok' || q === 'close')){
+      var t = top && top.ops[k];
+      if (!t || t.q !== 'ok'){ q = 'close'; heard = (t && t.heard) || ''; }
+    }
+    setQ(units[pos + k], q, heard);
+  });
+  pos += best.end;
+  advanceHeard(pos);
+}
+function startRec(s){
+  if (s !== S || !s.active) return;
+  var r = new SR();
+  r.lang = 'en-US'; r.interimResults = true; r.continuous = !IS_MOBILE; r.maxAlternatives = 5;
+  var done = {};
+  r.onresult = function(e){
+    if (S !== s || s.rec !== r) return;
+    onSpeech(s);
+    var interim = '';
+    for (var i = 0; i < e.results.length; i++){
+      var res = e.results[i];
+      if (res.isFinal){
+        if (!done[i]){
+          done[i] = 1;
+          var alts = [];
+          for (var a = 0; a < res.length; a++) if (res[a] && res[a].transcript) alts.push(res[a].transcript);
+          commitWs(alts);
+        }
+      }
+      else interim += ' ' + res[0].transcript;
+    }
+    s.interim = interim;
+    showProvisional(interim);
+    updateLive();
+    if (pos >= units.length) stopRead();
+  };
+  r.onerror = function(e){
+    if (S !== s || s.rec !== r) return;
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed'){ s.errMsg = 'Нет доступа к микрофону. Разреши микрофон для этой страницы (значок слева от адреса) и попробуй снова.'; s.active = false; }
+    else if (e.error === 'network'){ s.errMsg = 'Распознаванию речи нужен интернет. Проверь соединение.'; s.active = false; }
+    else if (e.error === 'audio-capture'){ s.errMsg = 'Микрофон не найден. Проверь, что он подключён.'; s.active = false; }
+  };
+  r.onend = function(){
+    if (S !== s || s.rec !== r) return;
+    if (s.interim && s.interim.trim()){ commitWs([s.interim]); s.interim = ''; showProvisional(''); updateLive(); }
+    if (s.active && pos < units.length) setTimeout(function(){ startRec(s); }, 60);
+    else { s.active = false; finalizeRead(s); }
+  };
+  s.rec = r;
+  try { r.start(); }
+  catch (err){ s.errMsg = 'Не получилось включить микрофон. Обнови страницу и попробуй снова.'; s.active = false; finalizeRead(s); }
+}
+
+/* ---------- reading: Azure pronunciation assessment ---------- */
+function phonemesOf(w){
+  return (w && w.Phonemes || []).map(function(p){
+    var pa = p.PronunciationAssessment || {};
+    var nb = (pa.NBestPhonemes || []).map(function(x){ return { p: x.Phoneme, s: num(x.Score) }; });
+    return { p: p.Phoneme || '', s: num(pa.AccuracyScore), nb: nb };
+  });
+}
+function azCommit(s, par){
+  var d = par && par.detailResult;
+  if (!d) return;
+  var hyp = [];
+  (d.Words || []).forEach(function(w){
+    var pa = w.PronunciationAssessment || {};
+    if (pa.ErrorType === 'Insertion' || pa.ErrorType === 'Omission') return;
+    var n = normWord(w.Word);
+    if (!n || FILLERS[n]) return;
+    hyp.push({ raw: w.Word, key: canon(n), w: w });
+    if (typeof w.Offset === 'number'){
+      var st = w.Offset, en = w.Offset + (w.Duration || 0);
+      if (s.azFirst < 0) s.azFirst = st;
+      if (s.azPrevEnd >= 0 && st - s.azPrevEnd > 2e7) s.azPauses++;
+      s.azPrevEnd = en;
+      if (en > s.azLast) s.azLast = en;
+    }
+  });
+  var seg = d.PronunciationAssessment || {};
+  if (hyp.length) s.azSeg.push({ n: hyp.length, flu: num(seg.FluencyScore), pro: num(seg.ProsodyScore) });
+  if (!hyp.length || pos >= units.length) return;
+  var r = align(hyp, keys, pos, false, true);
+  if (r.matches === 0){
+    if (hyp.length < 3) return;
+    var r2 = align(hyp, keys, pos, true, false);
+    if (r2.matches < Math.max(2, Math.ceil(hyp.length * 0.6))) return;
+    r = r2;
+  }
+  trimTail(r);
+  r.ops.forEach(function(op, k){
+    var u = units[pos + k];
+    if (op.q === 'skip'){ u.az = null; setQ(u, 'skip'); return; }
+    var w = hyp[op.h].w, acc = num((w.PronunciationAssessment || {}).AccuracyScore);
+    var otherWord = op.q === 'bad';
+    u.az = { acc: acc, ph: phonemesOf(w), heard: otherWord ? op.heard : '' };
+    var q = otherWord ? 'bad' : (acc == null ? op.q : acc >= 80 ? 'ok' : acc >= 60 ? 'close' : 'bad');
+    setQ(u, q, otherWord ? op.heard : '');
+    if (acc != null) s.azW.push({ acc: acc, dur: w.Duration || 1 });
+  });
+  pos += r.end;
+  advanceHeard(pos);
+}
+function azRead(from){
+  if (!hasMic){ setLive('Браузер не даёт доступ к микрофону.', 'warn'); return; }
+  if (!AZ.key || !AZ.region){ setLive('Укажи ключ и регион Azure в настройках или выключи Azure.', 'warn'); azKey.focus(); return; }
+  var s = beginRead(from, 'az');
+  setLive('Подключаюсь к Azure…', 'listen');
+  azLoad().then(function(sdk){
+    if (S !== s || !s.active) return;
+    var cfg = azConfig(sdk);
+    try { cfg.setProperty(sdk.PropertyId.Speech_SegmentationSilenceTimeoutMs, '700'); } catch (e) {}
+    var rec = new sdk.SpeechRecognizer(cfg, sdk.AudioConfig.fromDefaultMicrophoneInput());
+    var pa = new sdk.PronunciationAssessmentConfig(speakPlan(from).text, sdk.PronunciationAssessmentGradingSystem.HundredMark, sdk.PronunciationAssessmentGranularity.Phoneme, false);
+    try { pa.enableProsodyAssessment = true; } catch (e) {}
+    try { pa.phonemeAlphabet = 'IPA'; } catch (e) {}
+    try { pa.nbestPhonemeCount = 5; } catch (e) {}
+    pa.applyTo(rec);
+    s.rec = rec;
+    rec.recognizing = function(_, e){
+      if (S !== s) return;
+      onSpeech(s);
+      s.interim = e.result.text || '';
+      showProvisional(s.interim);
+      updateLive();
+    };
+    rec.recognized = function(_, e){
+      if (S !== s || e.result.reason !== sdk.ResultReason.RecognizedSpeech) return;
+      onSpeech(s);
+      var par = null;
+      try { par = sdk.PronunciationAssessmentResult.fromResult(e.result); } catch (er) {}
+      azCommit(s, par);
+      s.interim = ''; showProvisional(''); updateLive();
+      if (pos >= units.length) stopRead();
+    };
+    rec.canceled = function(_, e){
+      if (S !== s || e.reason !== sdk.CancellationReason.Error) return;
+      s.errMsg = azErrText(e.errorDetails, e.errorCode);
+      s.active = false; finalizeRead(s);
+    };
+    rec.sessionStopped = function(){ if (S === s){ s.active = false; finalizeRead(s); } };
+    rec.startContinuousRecognitionAsync(function(){
+      if (S !== s) return;
+      s.azStartT = performance.now();
+      setLive('Говори, я слушаю…', 'rec');
+    }, function(err){
+      if (S !== s) return;
+      s.errMsg = azErrText(err); s.active = false; finalizeRead(s);
+    });
+  }, function(){
+    if (S !== s) return;
+    s.errMsg = 'Не удалось загрузить библиотеку Azure. Проверь интернет.'; s.active = false; finalizeRead(s);
+  });
+}
+
+/* ---------- reading: finish ---------- */
+function stopRead(){
+  var s = S;
+  if (mode !== 'read' || !s || !s.active) return;
+  s.active = false;
+  setLive('Подвожу итоги…', '');
+  if (s.kind === 'az'){
+    if (s.rec){
+      try { s.rec.stopContinuousRecognitionAsync(function(){ setTimeout(function(){ finalizeRead(s); }, 400); }, function(){ finalizeRead(s); }); }
+      catch (e) { finalizeRead(s); return; }
+      s.fin = setTimeout(function(){ finalizeRead(s); }, 5000);
+    } else finalizeRead(s);
+  } else {
+    try { if (s.rec) s.rec.stop(); } catch (e) {}
+    s.fin = setTimeout(function(){ finalizeRead(s); }, 1800);
+  }
+}
+function wavg(list, k){
+  var a = 0, n = 0;
+  list.forEach(function(x){ if (x[k] != null){ a += x[k] * x.n; n += x.n; } });
+  return n ? a / n : null;
+}
+function computeResult(s){
+  var c = tally(readStart, pos), att = c.ok + c.close + c.bad + c.skip;
+  if (att < 3) return null;
+  var problems = [], seen = {};
+  if (s.kind === 'az'){
+    var scored = [];
+    for (var k = readStart; k < pos; k++){
+      var u = units[k];
+      if (!u.q || u.q === 'ok' || seen[u.key]) continue;
+      seen[u.key] = 1;
+      scored.push({ i: k, q: u.q, word: clean(u.disp), heard: u.az ? u.az.heard : '', acc: u.az ? u.az.acc : null });
+    }
+    scored.sort(function(a, b){ return (a.acc == null ? -1 : a.acc) - (b.acc == null ? -1 : b.acc); });
+    problems = scored;
+  } else {
+    ['bad', 'close', 'skip'].forEach(function(q){
+      for (var k2 = readStart; k2 < pos; k2++){
+        var u2 = units[k2];
+        if (u2.q !== q || seen[u2.key]) continue;
+        seen[u2.key] = 1;
+        problems.push({ i: k2, q: q, word: clean(u2.disp), heard: u2.heard && canon(normWord(u2.heard)) !== u2.key ? u2.heard : '' });
+      }
+    });
+  }
+  var res = {
+    engine: s.kind, c: c, attempted: att, pauses: s.pauses,
+    readN: pos - readStart, total: units.length - readStart, done: Math.round((pos - readStart) / (units.length - readStart) * 100),
+    problems: problems.slice(0, 16), native: nativeWpm || 150, nativeMeasured: !!nativeWpm, t: Date.now()
+  };
+  if (s.kind === 'az'){
+    var aw = 0, ad = 0;
+    s.azW.forEach(function(w){ aw += w.acc * w.dur; ad += w.dur; });
+    var acc = ad ? aw / ad : null, flu = wavg(s.azSeg, 'flu'), pro = wavg(s.azSeg, 'pro');
+    var comp = (c.ok + c.close + c.bad) / att * 100;
+    var parts = [acc, flu, pro, comp].filter(function(v){ return v != null; }).sort(function(a, b){ return a - b; });
+    var score = parts.length === 4 ? parts[0] * 0.4 + parts[1] * 0.2 + parts[2] * 0.2 + parts[3] * 0.2
+      : parts.reduce(function(a, b){ return a + b; }, 0) / parts.length;
+    res.score = Math.round(score);
+    res.acc = acc == null ? null : Math.round(acc);
+    res.flu = flu == null ? null : Math.round(flu);
+    res.pro = pro == null ? null : Math.round(pro);
+    res.comp = Math.round(comp);
+    var spoken = c.ok + c.close + c.bad;
+    if (s.azFirst >= 0 && s.azLast > s.azFirst && spoken >= 5){
+      var mins = (s.azLast - s.azFirst) / 1e7 / 60;
+      res.wpm = mins > 0.1 ? Math.round(spoken / mins) : null;
+      res.pauses = s.azPauses;
+    } else res.wpm = wpmOf(s, c);
+  } else {
+    res.score = Math.round((c.ok + 0.5 * c.close) / att * 100);
+    res.wpm = wpmOf(s, c);
+  }
+  return res;
+}
+function finalizeRead(s){
+  if (!s || s !== S || s.finalized) return;
+  s.finalized = true; clearTimeout(s.fin); cancelAnimationFrame(s.raf);
+  if (s.kind === 'ws' && s.interim && s.interim.trim()){ commitWs([s.interim]); s.interim = ''; }
+  clearProvisional(); setCursor(-1);
+  var res = computeResult(s);
+  var rec = s.rec;
+  S = null; mode = 'idle';
+  if (s.kind === 'az'){
+    if (s.azStartT) addUsage((performance.now() - s.azStartT) / 1000, 0);
+    try { if (rec) rec.close(); } catch (e) {}
+  } else {
+    try { if (rec) rec.abort(); } catch (e) {}
+  }
+  wake(false); setButtons();
+  if (res){
+    saveHistory(res); lastRes = res; renderResults(res);
+    setLive((s.errMsg ? s.errMsg + ' ' : '') + 'Итог: ' + res.score + '%' + (res.wpm ? ' · ' + res.wpm + ' сл/мин' : ''), s.errMsg ? 'warn' : 'done');
+    toResults.hidden = !isDockFixed();
+  } else {
+    setLive(s.errMsg || 'Не удалось ничего распознать. Проверь микрофон и попробуй ещё раз.', 'warn');
+  }
+}
+function stopAll(){
+  if (mode === 'listen') endListen(false);
+  else if (mode === 'read' && S){
+    var s = S; s.active = false;
+    try { if (s.rec){ if (s.kind === 'az') s.rec.stopContinuousRecognitionAsync(function(){}, function(){}); else s.rec.abort(); } } catch (e) {}
+    finalizeRead(s);
+  }
+  stopWordRec();
+}
+
+/* ---------- results ---------- */
+function histKey(kind){ return 'ev.hist.' + (kind === 'az' ? 'az.' : '') + textKey; }
+function getHist(kind){ var h = store.get(histKey(kind), []); return Array.isArray(h) ? h : []; }
+function saveHistory(r){ var h = getHist(r.engine); h.push({ t: r.t, s: r.score, w: r.wpm || 0, d: r.done }); store.set(histKey(r.engine), h.slice(-20)); }
+function scoreWord(s, az){
+  if (s >= 90) return az ? 'Отлично, звучит почти как у носителя.' : 'Отлично, почти всё распознано как написано.';
+  if (s >= 75) return 'Хорошо, есть что подтянуть.';
+  if (s >= 55) return 'Средне. Потренируй слова ниже.';
+  return 'Много ошибок. Попробуй читать медленнее.';
+}
+function tempoVerdict(w, nat){
+  if (!w) return 'Темп не посчитан: прочитай хотя бы пару предложений.';
+  var r = w / nat;
+  if (r < 0.7) return 'Медленно. Попробуй читать целыми фразами, а не по одному слову.';
+  if (r < 0.9) return 'Чуть медленнее носителя. Для чтения эссе это нормально.';
+  if (r <= 1.15) return 'Темп как у носителя.';
+  return 'Быстрее носителя. Проверь, не теряются ли окончания слов.';
+}
+function histHTML(h, kind){
+  var last = h.slice(-10), n = last.length, W = 280, H = 64, top = 16, base = 60, gap = 6;
+  var bw = Math.min(28, (W - gap * (n - 1)) / n), x0 = (W - (n * bw + (n - 1) * gap)) / 2;
+  var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Результаты последних попыток в процентах">';
+  svg += '<line class="axis" x1="0" x2="' + W + '" y1="' + base + '" y2="' + base + '"/>';
+  last.forEach(function(a, k){
+    var hgt = Math.max(2, (base - top) * a.s / 100), x = x0 + k * (bw + gap), isLast = k === n - 1;
+    svg += '<rect class="b' + (isLast ? ' last' : '') + '" x="' + x.toFixed(1) + '" y="' + (base - hgt).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + hgt.toFixed(1) + '" rx="3"/>';
+    svg += '<text class="' + (isLast ? 'last' : '') + '" x="' + (x + bw / 2).toFixed(1) + '" y="' + (base - hgt - 4).toFixed(1) + '" text-anchor="middle">' + a.s + '</text>';
+  });
+  svg += '</svg>';
+  var best = Math.max.apply(null, h.map(function(a){ return a.s; }));
+  return '<h3>Попытки с этим текстом' + (kind === 'az' ? ' (Azure)' : '') + '</h3><div class="hist">' + svg + '</div><p class="note">Лучший результат: ' + best + '% · попыток: ' + h.length + '</p>';
+}
+function statRow(k, sub, v, unit){
+  return '<div class="stat"><span class="k">' + k + (sub ? '<small>' + sub + '</small>' : '') + '</span><span class="v">' + (v == null ? '—' : v) + (unit ? ' <small>' + unit + '</small>' : '') + '</span></div>';
+}
+function renderResults(res){
+  var kind = res ? res.engine : engine(), hist = getHist(kind), html = '';
+  if (!res){
+    html += '<h2>Как заниматься</h2><ol class="steps">' +
+      '<li><span><b>Вставь эссе.</b> Нажми «Изменить текст» и вставь свой текст на английском.</span></li>' +
+      '<li><span><b>Послушай.</b> Голос прочитает эссе и подсветит каждое слово. Нажми на слово, чтобы перескочить к нему.</span></li>' +
+      '<li><span><b>Прочитай сам.</b> Жёлтым подсвечено слово, которое нужно сказать сейчас. В конце будут процент, темп и слова для тренировки.</span></li>' +
+      '</ol>';
+    if (!IS_MOBILE) html += '<p class="note">Пробел начинает и заканчивает чтение, Esc останавливает.</p>';
+  } else {
+    var c = res.c, att = res.attempted, az = res.engine === 'az';
+    function pct(k){ return (c[k] / att * 100).toFixed(2); }
+    html += '<div class="score"><div class="score-num">' + res.score + '<small>%</small></div>' +
+      '<div class="score-label"><b>' + (az ? 'оценка произношения' : 'совпадение с текстом') + '</b><br><span class="meta">' + scoreWord(res.score, az) + '</span></div></div>';
+    html += '<div class="bar" role="img" aria-label="Верно ' + c.ok + ', неточно ' + c.close + ', не так ' + c.bad + ', пропущено ' + c.skip + '">' +
+      '<span class="ok" style="width:' + pct('ok') + '%"></span><span class="close" style="width:' + pct('close') + '%"></span>' +
+      '<span class="bad" style="width:' + pct('bad') + '%"></span><span class="skip" style="width:' + pct('skip') + '%"></span></div>';
+    html += '<ul class="counts"><li><i class="sq ok"></i>верно <b>' + c.ok + '</b></li><li><i class="sq close"></i>неточно <b>' + c.close + '</b></li>' +
+      '<li><i class="sq bad"></i>не так <b>' + c.bad + '</b></li><li><i class="sq skip"></i>пропущено <b>' + c.skip + '</b></li></ul>';
+    var natLabel = res.nativeMeasured ? 'голос в этом тексте ≈ ' + res.native : 'носитель ≈ ' + res.native;
+    html += '<div class="stats">';
+    if (az){
+      html += statRow('Точность звуков', 'насколько звуки похожи на эталон', res.acc, 'из 100') +
+        statRow('Беглость', 'связность речи и паузы между словами', res.flu, 'из 100') +
+        statRow('Интонация', 'ударения, ритм и мелодия фраз', res.pro, 'из 100') +
+        statRow('Полнота', 'сколько слов текста прочитано', res.comp, 'из 100');
+    }
+    html += statRow('Темп', natLabel + ' сл/мин', res.wpm, 'сл/мин') +
+      statRow('Длинные паузы', 'дольше 2 секунд', res.pauses, '') +
+      statRow('Прочитано', res.readN + ' из ' + res.total + ' ' + plural(res.total, ['слова', 'слов', 'слов']), res.done + '%', '') +
+      '</div>';
+    html += '<p class="verdict">' + tempoVerdict(res.wpm, res.native) + '</p>';
+    html += '<h3>Слова для тренировки</h3>';
+    if (res.problems.length){
+      html += '<div class="chips">' + res.problems.map(function(p){
+        var sub = p.q === 'skip' ? '<small>пропуск</small>'
+          : (az && p.acc != null) ? '<small>' + Math.round(p.acc) + '%</small>'
+          : (p.heard ? '<small>→ ' + esc(p.heard) + '</small>' : '');
+        return '<button class="chip ' + p.q + '" type="button" data-i="' + p.i + '" lang="en">' + esc(p.word) + sub + '</button>';
+      }).join('') + '</div>';
+    } else html += '<p class="hint">Все прочитанные слова звучат верно.</p>';
+    html += az
+      ? '<p class="note">Azure сравнивает каждый звук с американским эталоном. Нажми на слово, чтобы увидеть, какие звуки получились хуже.</p>'
+      : '<p class="note">Процент — доля слов, которые распознаватель услышал так, как они написаны. Если слово нашлось только в запасных вариантах распознавания, оно «неточное» и считается за половину.</p>';
+  }
+  if (hist.length) html += histHTML(hist, kind);
+  resultsEl.innerHTML = html;
+}
+
+/* ---------- word popover ---------- */
+var popIdx = -1, wordRec = null;
+function setPopRes(t, cls){ popRes.textContent = t; popRes.className = 'pop-res' + (cls ? ' ' + cls : ''); }
+function renderPhonemes(ph){
+  popPh.innerHTML = ''; popPhNotes.innerHTML = '';
+  if (!ph || !ph.length){ popPh.hidden = true; popPhNotes.hidden = true; return; }
+  ph.forEach(function(p){
+    var sp = document.createElement('span');
+    sp.className = 'ph' + (p.s == null ? '' : p.s >= 80 ? '' : p.s >= 60 ? ' close' : ' bad');
+    sp.textContent = p.p;
+    if (p.s != null){ var sm = document.createElement('small'); sm.textContent = Math.round(p.s); sp.appendChild(sm); }
+    popPh.appendChild(sp);
+  });
+  var notes = ph.filter(function(p){ return p.s != null && p.s < 60; }).slice(0, 3).map(function(p){
+    var alt = p.nb && p.nb.length && p.nb[0].p !== p.p ? p.nb[0].p : '';
+    return '/' + p.p + '/ — ' + Math.round(p.s) + '%' + (alt ? ', звучит ближе к /' + alt + '/' : '');
+  });
+  notes.forEach(function(t){ var li = document.createElement('li'); li.textContent = t; popPhNotes.appendChild(li); });
+  popPh.hidden = false; popPhNotes.hidden = !notes.length;
+}
+function openPop(i){
+  var u = units[i]; if (!u) return;
+  stopWordRec();
+  popIdx = i;
+  popWord.textContent = clean(u.disp);
+  var info = '';
+  if (u.az && u.az.acc != null) info = 'Точность произношения: ' + Math.round(u.az.acc) + '%' + (u.az.heard ? ' · услышано «' + u.az.heard + '»' : '');
+  else if (u.q === 'skip') info = 'Это слово было пропущено.';
+  else if (u.q === 'ok') info = 'Прочитано верно.';
+  else if ((u.q === 'bad' || u.q === 'close') && u.heard && canon(normWord(u.heard)) !== u.key) info = (u.q === 'close' ? 'Почти: услышано «' : 'Услышано: «') + u.heard + '»';
+  else if (u.q === 'close') info = 'Распознаватель не был уверен в этом слове.';
+  popInfo.textContent = info;
+  renderPhonemes(u.az ? u.az.ph : null);
+  setPopRes('', '');
+  updateEngineUI();
+  popHear.disabled = sel.kind === 'az' ? false : !synth;
+  pop.hidden = false;
+  placePop(u.el);
+  try { popHear.focus({ preventScroll: true }); } catch (e) {}
+}
+function placePop(el){
+  var r = el.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight;
+  var left = Math.max(12, Math.min(r.left + r.width / 2 - pw / 2, window.innerWidth - pw - 12));
+  var limit = window.innerHeight - (isDockFixed() ? dock.offsetHeight : 0) - 12;
+  var top = r.bottom + 8;
+  if (top + ph > limit && r.top - ph - 8 > 8) top = r.top - ph - 8;
+  pop.style.left = (left + window.scrollX) + 'px';
+  pop.style.top = (top + window.scrollY) + 'px';
+}
+function closePop(){ if (!pop.hidden) pop.hidden = true; popIdx = -1; stopWordRec(); }
+function stopWordRec(){
+  if (!wordRec) return;
+  var t = wordRec; wordRec = null;
+  try { if (t.abort) t.abort(); } catch (e) {}
+  updateEngineUI();
+}
+function sayWord(i){
+  if (!units[i] || mode !== 'idle') return;
+  if (engine() === 'az') azSayWord(i); else wsSayWord(i);
+}
+function wsSayWord(i){
+  var u = units[i];
+  if (!SR) return;
+  stopWordRec();
+  try { if (synth) synth.cancel(); } catch (e) {}
+  var r = new SR(), got = false, token = { abort: function(){ r.abort(); } };
+  r.lang = 'en-US'; r.interimResults = false; r.continuous = false; r.maxAlternatives = 5;
+  wordRec = token;
+  setPopRes('Говори…', 'wait'); popSay.disabled = true;
+  r.onresult = function(e){
+    if (wordRec !== token) return;
+    got = true;
+    var res = e.results[0], hitRank = -1, best = '', bestSim = -1;
+    for (var k = 0; k < res.length && hitRank < 0; k++){
+      var toks = hypTokens(res[k].transcript);
+      for (var t = 0; t < toks.length; t++){
+        if (toks[t].key === u.key){ hitRank = k; break; }
+        if (k === 0){ var sm = similarity(toks[t].key, u.key); if (sm > bestSim){ bestSim = sm; best = toks[t].raw; } }
+      }
+    }
+    if (hitRank === 0) setPopRes('Чисто! Распознано верно.', 'ok');
+    else if (hitRank > 0 || bestSim >= 0.75) setPopRes('Почти: распознаватель сомневался' + (best ? ', услышано «' + best + '»' : '') + '.', 'close');
+    else setPopRes(best ? 'Услышано «' + best + '». Послушай и попробуй ещё.' : 'Не расслышал, попробуй ещё раз.', 'bad');
+  };
+  r.onerror = function(e){
+    if (wordRec !== token) return;
+    got = true;
+    setPopRes(e.error === 'not-allowed' || e.error === 'service-not-allowed' ? 'Нет доступа к микрофону.'
+      : e.error === 'network' ? 'Для распознавания нужен интернет.' : 'Не расслышал, попробуй ещё раз.', 'bad');
+  };
+  r.onend = function(){
+    if (wordRec !== token) return;
+    wordRec = null; updateEngineUI();
+    if (!got) setPopRes('Не расслышал, попробуй ещё раз.', 'bad');
+  };
+  try { r.start(); } catch (err){ wordRec = null; updateEngineUI(); setPopRes('Микрофон занят, попробуй ещё раз.', 'bad'); }
+}
+function azSayWord(i){
+  var u = units[i];
+  if (!AZ.key || !AZ.region){ setPopRes('Укажи ключ Azure в настройках.', 'bad'); return; }
+  stopWordRec();
+  try { if (synth) synth.cancel(); } catch (e) {}
+  var token = { abort: null };
+  wordRec = token;
+  setPopRes('Подключаюсь к Azure…', 'wait'); popSay.disabled = true;
+  azLoad().then(function(sdk){
+    if (wordRec !== token) return;
+    var rec = new sdk.SpeechRecognizer(azConfig(sdk), sdk.AudioConfig.fromDefaultMicrophoneInput());
+    var pa = new sdk.PronunciationAssessmentConfig(clean(u.disp), sdk.PronunciationAssessmentGradingSystem.HundredMark, sdk.PronunciationAssessmentGranularity.Phoneme, true);
+    try { pa.phonemeAlphabet = 'IPA'; } catch (e) {}
+    try { pa.nbestPhonemeCount = 5; } catch (e) {}
+    pa.applyTo(rec);
+    token.abort = function(){ try { rec.close(); } catch (e) {} };
+    var t0 = performance.now();
+    setPopRes('Говори…', 'wait');
+    function done(){ addUsage((performance.now() - t0) / 1000, 0); try { rec.close(); } catch (e) {} wordRec = null; updateEngineUI(); }
+    rec.recognizeOnceAsync(function(result){
+      if (wordRec !== token){ try { rec.close(); } catch (e) {} return; }
+      done();
+      if (result.reason === sdk.ResultReason.RecognizedSpeech){
+        var par = null;
+        try { par = sdk.PronunciationAssessmentResult.fromResult(result); } catch (e) {}
+        var w = par && par.detailResult && par.detailResult.Words && par.detailResult.Words[0];
+        var acc = w && w.PronunciationAssessment ? num(w.PronunciationAssessment.AccuracyScore) : (par ? num(par.accuracyScore) : null);
+        if (acc == null){ setPopRes('Не расслышал, попробуй ещё раз.', 'bad'); return; }
+        var q = acc >= 80 ? 'ok' : acc >= 60 ? 'close' : 'bad';
+        setPopRes((q === 'ok' ? 'Чисто! ' : q === 'close' ? 'Почти. ' : 'Нужно поработать. ') + 'Точность ' + Math.round(acc) + '%', q);
+        renderPhonemes(phonemesOf(w));
+      } else if (result.reason === sdk.ResultReason.NoMatch){
+        setPopRes('Не расслышал, попробуй ещё раз.', 'bad');
+      } else {
+        var cd = null;
+        try { cd = sdk.CancellationDetails.fromResult(result); } catch (e) {}
+        setPopRes(azErrText(cd ? cd.errorDetails : '', cd ? cd.ErrorCode : undefined), 'bad');
+      }
+    }, function(err){
+      if (wordRec !== token) return;
+      done(); setPopRes(azErrText(err), 'bad');
+    });
+  }, function(){
+    if (wordRec !== token) return;
+    wordRec = null; updateEngineUI(); setPopRes('Не удалось загрузить библиотеку Azure.', 'bad');
+  });
+}
+
+/* ---------- editor ---------- */
+function updateEditorCount(){
+  var n = (editor.value.match(/[A-Za-z0-9’']+/g) || []).length;
+  var msg = n + ' ' + plural(n, ['слово', 'слова', 'слов']);
+  if (/[а-яё]/i.test(editor.value)) msg += ' · в тексте есть русские буквы, их программа не распознает';
+  editorCount.textContent = msg;
+}
+function openEditor(){
+  stopAll(); closePop();
+  editor.value = text;
+  reader.hidden = true; legend.hidden = true; editorWrap.hidden = false; editBtn.hidden = true;
+  updateEditorCount();
+  editor.focus();
+}
+function closeEditor(){
+  var v = editor.value.trim();
+  if (!v){ editorCount.textContent = 'Вставь текст эссе, чтобы продолжить.'; return; }
+  text = v; store.set('ev.text', text);
+  editorWrap.hidden = true; reader.hidden = false; legend.hidden = false; editBtn.hidden = false;
+  build();
+  applyVoice(voiceSel.value);
+}
+
+/* ---------- events ---------- */
+listenBtn.addEventListener('click', function(){ unlockSpeech(); listenFrom(startIdx); });
+readBtn.addEventListener('click', function(){ primeMic(); readFrom(startIdx); });
+stopBtn.addEventListener('click', function(){ if (mode === 'listen') endListen(false); else if (mode === 'read') stopRead(); });
+editBtn.addEventListener('click', openEditor);
+doneBtn.addEventListener('click', closeEditor);
+clearBtn.addEventListener('click', function(){ editor.value = ''; editor.focus(); updateEditorCount(); });
+sampleBtn.addEventListener('click', function(){ editor.value = SAMPLE; updateEditorCount(); });
+editor.addEventListener('input', updateEditorCount);
+startReset.addEventListener('click', function(){ setStart(0); });
+toResults.addEventListener('click', function(){ resultsEl.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }); toResults.hidden = true; });
+
+reader.addEventListener('click', function(e){
+  var w = e.target.closest('.w'); if (!w) return;
+  var i = +w.dataset.i;
+  if (mode === 'listen'){ listenFrom(i); return; }
+  if (mode === 'read') return;
+  openPop(i);
+});
+resultsEl.addEventListener('click', function(e){
+  var ch = e.target.closest('.chip'); if (!ch) return;
+  var i = +ch.dataset.i; if (!units[i]) return;
+  units[i].el.scrollIntoView({ block: 'center', behavior: reduceMotion ? 'auto' : 'smooth' });
+  setTimeout(function(){ openPop(i); }, reduceMotion ? 0 : 380);
+});
+popHear.addEventListener('click', function(){ if (popIdx >= 0){ unlockSpeech(); speakWord(clean(units[popIdx].disp)); } });
+popSay.addEventListener('click', function(){ if (popIdx >= 0 && mode === 'idle'){ primeMic(); sayWord(popIdx); } });
+popFrom.addEventListener('click', function(){
+  if (popIdx < 0) return;
+  setStart(popIdx);
+  setLive('Начнём с «' + clean(units[popIdx].disp) + '». Нажми «Послушать» или «Читать сам».', '');
+  closePop();
+});
+popClose.addEventListener('click', closePop);
+document.addEventListener('pointerdown', function(e){
+  if (pop.hidden) return;
+  if (pop.contains(e.target) || e.target.closest('.w') || e.target.closest('.chip')) return;
+  closePop();
+});
+window.addEventListener('resize', function(){ if (!pop.hidden) closePop(); });
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape'){ if (!pop.hidden) closePop(); else stopAll(); return; }
+  var t = e.target;
+  if (t && t.closest && t.closest('textarea,input,select,button,summary')) return;
+  if (e.code === 'Space' && editorWrap.hidden){
+    e.preventDefault();
+    if (mode === 'read') stopRead();
+    else if (mode === 'idle' && !readBtn.disabled){ primeMic(); readFrom(startIdx); }
+  }
+});
+
+voiceSel.addEventListener('change', function(){
+  if (mode === 'listen') endListen(false);
+  store.set('ev.voiceSel', voiceSel.value);
+  applyVoice(voiceSel.value);
+});
+rateIn.value = String(rate);
+rateOut.textContent = rate.toFixed(2) + '×';
+rateIn.addEventListener('input', function(){
+  rate = parseFloat(rateIn.value) || 1;
+  rateOut.textContent = rate.toFixed(2) + '×';
+  store.set('ev.rate', rate);
+  if (L) L.rateChanged = true;
+});
+
+azOn.checked = AZ.on; azBody.hidden = !AZ.on; azKey.value = AZ.key; azRegion.value = AZ.region;
+azOn.addEventListener('change', function(){
+  stopAll();
+  AZ.on = azOn.checked; store.set('ev.az.on', AZ.on);
+  azBody.hidden = !AZ.on;
+  if (AZ.on && !store.get('ev.az.voiceSet', false)){
+    store.set('ev.voiceSel', 'az:' + (/guy/i.test(sel.name) ? 'en-US-GuyNeural' : 'en-US-AndrewNeural'));
+    store.set('ev.az.voiceSet', true);
+  }
+  loadVoices();
+  if (AZ.on) azLoad().catch(function(){});
+  renderResults(lastRes && lastRes.engine === engine() ? lastRes : null);
+  setLive(AZ.on ? (AZ.key && AZ.region ? 'Azure включён.' : 'Azure включён. Укажи ключ и регион.') : 'Azure выключен, работает бесплатный режим браузера.', '');
+  if (AZ.on && !(AZ.key && AZ.region)) azKey.focus();
+});
+azKey.addEventListener('input', function(){ AZ.key = azKey.value.trim(); store.set('ev.az.key', AZ.key); setAzStatus('', ''); });
+azRegion.addEventListener('input', function(){
+  AZ.region = azRegion.value.toLowerCase().replace(/[^a-z0-9]/g, '');
+  store.set('ev.az.region', AZ.region); setAzStatus('', '');
+});
+azRegion.addEventListener('change', function(){ azRegion.value = AZ.region; });
+azTest.addEventListener('click', function(){
+  if (!AZ.key || !AZ.region){ setAzStatus('Заполни ключ и регион.', 'bad'); return; }
+  setAzStatus('Проверяю…', '');
+  azLoad().then(function(sdk){
+    var sy = new sdk.SpeechSynthesizer(azConfig(sdk), null);
+    return sy.getVoicesAsync('en-US').then(function(r){
+      try { sy.close(); } catch (e) {}
+      if (r && r.reason === sdk.ResultReason.VoicesListRetrieved) setAzStatus('Ключ работает.', 'ok');
+      else setAzStatus(azErrText(r && r.errorDetails), 'bad');
+    }, function(err){ try { sy.close(); } catch (e) {} setAzStatus(azErrText(err && err.message ? err.message : err), 'bad'); });
+  }, function(){ setAzStatus('Не удалось загрузить библиотеку Azure. Проверь интернет.', 'bad'); });
+});
+
+/* ---------- init ---------- */
+renderUsage();
+if (AZ.on) azLoad().catch(function(){});
+loadVoices();
+if (synth){
+  if (synth.addEventListener) synth.addEventListener('voiceschanged', loadVoices); else synth.onvoiceschanged = loadVoices;
+  setTimeout(loadVoices, 800);
+}
+build();
+applyVoice(voiceSel.value);
+setButtons();
+})();
+</script>
+</body>
+</html>
