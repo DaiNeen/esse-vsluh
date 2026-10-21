@@ -103,7 +103,8 @@ h1{font:italic 600 1.75rem/1.1 var(--f-text);margin:0;letter-spacing:-.01em;text
 .w.cur,.sw.cur{background:var(--marker);color:var(--marker-ink);box-shadow:0 0 0 2px var(--marker)}
 /* text view: syllables, parts of speech, labels */
 .w{position:relative}
-.reader.syl .sy + .sy::before{content:"·";color:var(--muted);font-weight:400;margin:0 .05em}
+.reader.syl{word-spacing:.6em;letter-spacing:.04em}
+.reader.syl .sy + .sy::before{content:"·";color:var(--muted);font-weight:400;margin:0 .1em;letter-spacing:0}
 .reader.pos-n .w[data-pos="n"]{color:var(--pos-n)}
 .reader.pos-v .w[data-pos="v"]{color:var(--pos-v)}
 .reader.pos-adj .w[data-pos="adj"]{color:var(--pos-adj)}
