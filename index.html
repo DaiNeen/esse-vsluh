@@ -27,6 +27,10 @@
   --bad:#C4362C; --bad-soft:#FBE1DE; --bad-ink:#FFFFFF;
   --skip:#8790A0;
   --shadow:0 1px 2px rgba(23,32,48,.05), 0 10px 30px rgba(23,32,48,.07);
+  /* colours a reader can pick for parts of speech */
+  --pal-purple:#A43BC9; --pal-red:#D1301F; --pal-green:#15853A; --pal-gold:#A87C00;
+  --pal-blue:#1F5FD1; --pal-teal:#0F7F86; --pal-orange:#C25A00; --pal-pink:#C2257A;
+  --pos-n:var(--pal-purple); --pos-v:var(--pal-red); --pos-adj:var(--pal-green); --pos-adv:var(--pal-gold);
   --f-text:"Literata", Georgia, "Times New Roman", serif;
   --f-ui:"Onest", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --f-num:"JetBrains Mono", ui-monospace, Consolas, monospace;
@@ -39,6 +43,8 @@
     --marker:#E9C84A; --marker-ink:#15171C;
     --ok:#55CC8F; --ok-soft:#163327; --close:#E8AE52; --close-soft:#3A2D15; --bad:#FF8073; --bad-soft:#3E1E1B; --bad-ink:#1A0B09;
     --skip:#6D7688; --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.25);
+    --pal-purple:#D58BF2; --pal-red:#FF7A6B; --pal-green:#5FD18A; --pal-gold:#E9C14A;
+    --pal-blue:#7FA8FF; --pal-teal:#4FD1D9; --pal-orange:#FFA05C; --pal-pink:#FF85C2;
     color-scheme:dark;
   }
 }
@@ -48,6 +54,8 @@
   --marker:#E9C84A; --marker-ink:#15171C;
   --ok:#55CC8F; --ok-soft:#163327; --close:#E8AE52; --close-soft:#3A2D15; --bad:#FF8073; --bad-soft:#3E1E1B; --bad-ink:#1A0B09;
   --skip:#6D7688; --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.25);
+  --pal-purple:#D58BF2; --pal-red:#FF7A6B; --pal-green:#5FD18A; --pal-gold:#E9C14A;
+  --pal-blue:#7FA8FF; --pal-teal:#4FD1D9; --pal-orange:#FFA05C; --pal-pink:#FF85C2;
   color-scheme:dark;
 }
 
@@ -78,7 +86,7 @@ h1{font:italic 600 1.75rem/1.1 var(--f-text);margin:0;letter-spacing:-.01em;text
 .sheet-title{display:flex;align-items:center;gap:8px;font-weight:600}
 .badge{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--close);background:var(--close-soft);padding:3px 8px;border-radius:999px}
 .meta{color:var(--muted);font-size:13px}
-.tools{display:flex;align-items:center;gap:12px}
+.tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
 .reader{font-family:var(--f-text);font-size:clamp(1.1rem,1rem + .45vw,1.38rem);line-height:2.05;padding:22px clamp(18px,4vw,48px) 10px;max-width:44em;overflow-wrap:break-word}
 .reader p{margin:0 0 .9em}
 .s{border-radius:6px;transition:background-color .2s}
@@ -93,6 +101,41 @@ h1{font:italic 600 1.75rem/1.1 var(--f-text);margin:0;letter-spacing:-.01em;text
 .w.heard{background:var(--accent-soft)}
 .w.start::before{content:"▸";color:var(--accent);font-size:.75em;margin-right:.15em;vertical-align:.12em}
 .w.cur,.sw.cur{background:var(--marker);color:var(--marker-ink);box-shadow:0 0 0 2px var(--marker)}
+/* text view: syllables, parts of speech, labels */
+.w{position:relative}
+.reader.syl .sy + .sy::before{content:"·";color:var(--muted);font-weight:400;margin:0 .05em}
+.reader.pos-n .w[data-pos="n"]{color:var(--pos-n)}
+.reader.pos-v .w[data-pos="v"]{color:var(--pos-v)}
+.reader.pos-adj .w[data-pos="adj"]{color:var(--pos-adj)}
+.reader.pos-adv .w[data-pos="adv"]{color:var(--pos-adv)}
+.reader.pos-labels{line-height:2.75}
+.reader.pos-labels .w[data-pos]::after{position:absolute;left:.12em;bottom:100%;margin-bottom:-.38em;font:600 .5em/1 var(--f-ui);letter-spacing:.02em;white-space:nowrap;pointer-events:none}
+.reader.pos-labels.pos-n .w[data-pos="n"]::after{content:"сущ.";color:var(--pos-n)}
+.reader.pos-labels.pos-v .w[data-pos="v"]::after{content:"гл.";color:var(--pos-v)}
+.reader.pos-labels.pos-adj .w[data-pos="adj"]::after{content:"прил.";color:var(--pos-adj)}
+.reader.pos-labels.pos-adv .w[data-pos="adv"]::after{content:"нареч.";color:var(--pos-adv)}
+.reader[class] .w.cur[data-pos]{color:var(--marker-ink)}
+.view-panel{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:6px 32px;padding:12px 22px 14px;border-bottom:1px solid var(--line);background:var(--sent)}
+.vp-group{display:flex;flex-direction:column;gap:2px;min-width:0}
+.vp-title{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:6px 0 2px}
+.vp-row{display:flex;align-items:center;gap:10px;min-height:38px}
+.vp-name{flex:1;min-width:0;font-size:14px}
+.vp-name small{font:600 11px var(--f-ui);margin-left:6px}
+.vp-name small[data-k="n"]{color:var(--pos-n)}
+.vp-name small[data-k="v"]{color:var(--pos-v)}
+.vp-name small[data-k="adj"]{color:var(--pos-adj)}
+.vp-name small[data-k="adv"]{color:var(--pos-adv)}
+.swatch[data-k="n"]{background:var(--pos-n)}
+.swatch[data-k="v"]{background:var(--pos-v)}
+.swatch[data-k="adj"]{background:var(--pos-adj)}
+.swatch[data-k="adv"]{background:var(--pos-adv)}
+.swatch{width:26px;height:26px;border-radius:7px;border:2px solid var(--sheet);box-shadow:0 0 0 1px var(--line-strong);cursor:pointer;flex:none;padding:0}
+.swatch:focus-visible,.pal-opt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.aa{font:italic 600 15px/1 var(--f-text)}
+.btn[aria-expanded="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.palette{position:absolute;z-index:45;display:grid;grid-template-columns:repeat(4,30px);gap:8px;padding:10px;background:var(--sheet);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.2)}
+.pal-opt{width:30px;height:30px;border-radius:8px;border:2px solid var(--sheet);box-shadow:0 0 0 1px var(--line-strong);cursor:pointer;padding:0}
+.pal-opt[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ink)}
 .legend{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:12px 22px 16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
 .lg{display:inline-flex;align-items:center;gap:6px}
 .sw{font:500 15px/1.4 var(--f-text);padding:0 4px;color:var(--ink)}
@@ -120,7 +163,7 @@ h1{font:italic 600 1.75rem/1.1 var(--f-text);margin:0;letter-spacing:-.01em;text
 .dot.warn{background:var(--close)}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--bad) 45%,transparent)}50%{box-shadow:0 0 0 7px transparent}}
 .btns{display:flex;gap:10px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--sheet);color:var(--ink);border-radius:999px;padding:9px 15px;font-weight:600;font-size:14px;line-height:1;cursor:pointer;transition:border-color .15s,background-color .15s,transform .08s}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;border:1px solid var(--line);background:var(--sheet);color:var(--ink);border-radius:999px;padding:9px 15px;font-weight:600;font-size:14px;line-height:1;cursor:pointer;transition:border-color .15s,background-color .15s,transform .08s}
 .btn:hover{border-color:var(--accent)}
 .btn:active{transform:translateY(1px)}
 .btn:focus-visible,.link-btn:focus-visible,.chip:focus-visible,.x:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
@@ -251,7 +294,22 @@ details p{margin:8px 0 0;color:var(--muted)}
     <section class="sheet" aria-label="Текст эссе">
       <div class="sheet-head">
         <div class="sheet-title"><span>Твоё эссе</span><span id="sampleBadge" class="badge" hidden>Пример</span></div>
-        <div class="tools"><span id="wordCount" class="meta"></span><button id="editBtn" class="btn sm" type="button">Изменить текст</button></div>
+        <div class="tools"><span id="wordCount" class="meta"></span><button id="viewBtn" class="btn sm" type="button" aria-expanded="false" aria-controls="viewPanel"><span class="aa" aria-hidden="true">Aa</span>Вид текста</button><button id="editBtn" class="btn sm" type="button">Изменить текст</button></div>
+      </div>
+      <div id="viewPanel" class="view-panel" hidden>
+        <div class="vp-group">
+          <div class="vp-title">Слова</div>
+          <div class="vp-row"><span class="vp-name">Слоги</span><label class="switch"><input id="vSyl" type="checkbox" aria-label="Делить слова на слоги"><span></span></label></div>
+          <div class="vp-row"><span class="vp-name">Подписи над словами</span><label class="switch"><input id="vLabels" type="checkbox" aria-label="Подписывать части речи над словами"><span></span></label></div>
+          <p id="vpStatus" class="hint" hidden></p>
+        </div>
+        <div class="vp-group">
+          <div class="vp-title">Части речи</div>
+          <div class="vp-row"><button class="swatch" type="button" data-k="n" aria-label="Цвет существительных"></button><span class="vp-name">существительные<small data-k="n">сущ.</small></span><label class="switch"><input id="vN" type="checkbox" data-k="n" aria-label="Выделять существительные"><span></span></label></div>
+          <div class="vp-row"><button class="swatch" type="button" data-k="v" aria-label="Цвет глаголов"></button><span class="vp-name">глаголы<small data-k="v">гл.</small></span><label class="switch"><input id="vV" type="checkbox" data-k="v" aria-label="Выделять глаголы"><span></span></label></div>
+          <div class="vp-row"><button class="swatch" type="button" data-k="adj" aria-label="Цвет прилагательных"></button><span class="vp-name">прилагательные<small data-k="adj">прил.</small></span><label class="switch"><input id="vAdj" type="checkbox" data-k="adj" aria-label="Выделять прилагательные"><span></span></label></div>
+          <div class="vp-row"><button class="swatch" type="button" data-k="adv" aria-label="Цвет наречий"></button><span class="vp-name">наречия<small data-k="adv">нареч.</small></span><label class="switch"><input id="vAdv" type="checkbox" data-k="adv" aria-label="Выделять наречия"><span></span></label></div>
+        </div>
       </div>
       <div id="reader" class="reader" lang="en"></div>
       <div id="editorWrap" class="editor-wrap" hidden>
@@ -323,6 +381,8 @@ details p{margin:8px 0 0;color:var(--muted)}
     </aside>
   </main>
 </div>
+
+<div id="palette" class="palette" role="dialog" aria-label="Выбор цвета" hidden></div>
 
 <div id="pop" class="pop" role="dialog" aria-label="Тренировка слова" hidden>
   <div class="pop-head"><span id="popWord" class="pop-word" lang="en"></span><button id="popClose" class="x" type="button" aria-label="Закрыть">×</button></div>
@@ -618,7 +678,145 @@ function build(){
   renderResults(null);
   updateEngineUI();
   setLive(units.length ? 'Сначала послушай, потом прочитай сам.' : 'Добавь текст эссе.', '');
+  textTagged = false; textSyl = false;
+  applyView();
 }
+
+/* ---------- text view: syllables and parts of speech ---------- */
+/* The tagger (wink-nlp) and the syllable splitter (TeX hyphenation patterns plus a few
+   rules) are bundled in text-tools.js next to this page; a copy on jsDelivr serves the
+   page when it is opened as a local file. They load only when a view option is on. */
+var TT_URLS = ['text-tools.js', 'https://cdn.jsdelivr.net/gh/DaiNeen/esse-vsluh@4bd1a243904f79f601bfd84faa9200526173dcea/text-tools.js'];
+var POS_KEYS = ['n', 'v', 'adj', 'adv'];
+var PAL = ['purple', 'red', 'green', 'gold', 'blue', 'teal', 'orange', 'pink'];
+var PAL_NAMES = { purple: 'фиолетовый', red: 'красный', green: 'зелёный', gold: 'жёлтый', blue: 'синий', teal: 'бирюзовый', orange: 'оранжевый', pink: 'розовый' };
+var POS_MAP = { NOUN: 'n', PROPN: 'n', VERB: 'v', AUX: 'v', ADJ: 'adj', ADV: 'adv' };
+var view = (function(){
+  var d = { syl: false, labels: false, n: false, v: false, adj: false, adv: false, colors: { n: 'purple', v: 'red', adj: 'green', adv: 'gold' } };
+  var s = store.get('ev.view', null);
+  if (s && typeof s === 'object'){
+    ['syl', 'labels', 'n', 'v', 'adj', 'adv'].forEach(function(k){ if (typeof s[k] === 'boolean') d[k] = s[k]; });
+    if (s.colors) POS_KEYS.forEach(function(k){ if (PAL.indexOf(s.colors[k]) >= 0) d.colors[k] = s.colors[k]; });
+  }
+  return d;
+})();
+var textTagged = false, textSyl = false, ttLoading = null;
+var viewBtn = $('viewBtn'), viewPanel = $('viewPanel'), vpStatus = $('vpStatus'), palette = $('palette');
+var vInputs = { syl: $('vSyl'), labels: $('vLabels'), n: $('vN'), v: $('vV'), adj: $('vAdj'), adv: $('vAdv') };
+
+function ttLoad(){
+  if (window.EVText) return Promise.resolve(window.EVText);
+  if (ttLoading) return ttLoading;
+  ttLoading = new Promise(function(res, rej){
+    var i = 0;
+    (function next(){
+      if (i >= TT_URLS.length){ ttLoading = null; rej(new Error('load')); return; }
+      var sc = document.createElement('script');
+      sc.src = TT_URLS[i++]; sc.async = true;
+      sc.onload = function(){ if (window.EVText) res(window.EVText); else next(); };
+      sc.onerror = function(){ sc.remove(); next(); };
+      document.head.appendChild(sc);
+    })();
+  });
+  return ttLoading;
+}
+function setVpStatus(t){ vpStatus.textContent = t; vpStatus.hidden = !t; }
+function tagText(T){
+  sentences.forEach(function(s){
+    var toks = [];
+    try { toks = T.tag(s.text); } catch (e) {}
+    var k = 0;
+    for (var i = s.start; i < s.end; i++){
+      var u = units[i];
+      while (k < toks.length && toks[k].end <= u.off) k++;
+      var t = toks[k], p = t && t.start <= u.off ? POS_MAP[t.pos] : null;
+      if (p) u.el.dataset.pos = p; else delete u.el.dataset.pos;
+    }
+  });
+  textTagged = true;
+}
+function sylText(T){
+  units.forEach(function(u){
+    var m = /^([^A-Za-z]*)([A-Za-z]+)([^A-Za-z]*)$/.exec(u.disp);
+    if (!m) return;
+    var parts;
+    try { parts = T.syllables(m[2]); } catch (e) { parts = [m[2]]; }
+    if (!parts || parts.length < 2) return;
+    var el = u.el;
+    el.textContent = '';
+    if (m[1]) el.appendChild(document.createTextNode(m[1]));
+    parts.forEach(function(p){ var sp = document.createElement('span'); sp.className = 'sy'; sp.textContent = p; el.appendChild(sp); });
+    if (m[3]) el.appendChild(document.createTextNode(m[3]));
+  });
+  textSyl = true;
+}
+function applyView(){
+  var anyPos = POS_KEYS.some(function(k){ return view[k]; });
+  reader.classList.toggle('syl', view.syl);
+  POS_KEYS.forEach(function(k){
+    reader.classList.toggle('pos-' + k, view[k]);
+    document.documentElement.style.setProperty('--pos-' + k, 'var(--pal-' + view.colors[k] + ')');
+  });
+  reader.classList.toggle('pos-labels', view.labels && anyPos);
+  vInputs.labels.disabled = !anyPos;
+  Object.keys(vInputs).forEach(function(k){ vInputs[k].checked = !!view[k]; });
+  var needPos = anyPos && !textTagged, needSyl = view.syl && !textSyl;
+  if (!needPos && !needSyl){ setVpStatus(''); return; }
+  setVpStatus('Загружаю словарь…');
+  ttLoad().then(function(T){
+    if (anyPos && !textTagged) tagText(T);
+    if (view.syl && !textSyl) sylText(T);
+    setVpStatus('');
+  }, function(){
+    setVpStatus('Не удалось загрузить словарь. Проверь интернет и включи ещё раз.');
+  });
+}
+function saveView(){ store.set('ev.view', view); }
+function closePalette(){ if (!palette.hidden){ palette.hidden = true; palette.innerHTML = ''; } }
+function openPalette(sw){
+  var k = sw.dataset.k;
+  palette.innerHTML = '';
+  PAL.forEach(function(id){
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'pal-opt';
+    b.style.background = 'var(--pal-' + id + ')';
+    b.setAttribute('aria-label', PAL_NAMES[id]);
+    b.setAttribute('aria-pressed', String(view.colors[k] === id));
+    b.addEventListener('click', function(){
+      view.colors[k] = id; saveView(); applyView(); closePalette();
+      try { sw.focus({ preventScroll: true }); } catch (e) {}
+    });
+    palette.appendChild(b);
+  });
+  palette.hidden = false;
+  var r = sw.getBoundingClientRect(), pw = palette.offsetWidth;
+  palette.style.left = (Math.max(12, Math.min(r.left, window.innerWidth - pw - 12)) + window.scrollX) + 'px';
+  palette.style.top = (r.bottom + 8 + window.scrollY) + 'px';
+  var first = palette.querySelector('[aria-pressed="true"]') || palette.firstChild;
+  try { first.focus({ preventScroll: true }); } catch (e) {}
+}
+viewBtn.addEventListener('click', function(){
+  var open = viewPanel.hidden;
+  viewPanel.hidden = !open;
+  viewBtn.setAttribute('aria-expanded', String(open));
+  if (!open) closePalette();
+});
+Object.keys(vInputs).forEach(function(k){
+  vInputs[k].addEventListener('change', function(){ view[k] = vInputs[k].checked; saveView(); applyView(); });
+});
+viewPanel.addEventListener('click', function(e){
+  var sw = e.target.closest('.swatch');
+  if (!sw) return;
+  if (!palette.hidden && palette.dataset.k === sw.dataset.k){ closePalette(); return; }
+  palette.dataset.k = sw.dataset.k;
+  openPalette(sw);
+});
+document.addEventListener('pointerdown', function(e){
+  if (palette.hidden) return;
+  if (palette.contains(e.target) || e.target.closest('.swatch')) return;
+  closePalette();
+});
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closePalette(); });
 /* Text from unit `from` up to the end of the sentence that holds unit `to - 1`
    (or the end of the essay), plus where each word sits in it. */
 function speakPlan(from, to){
@@ -1769,6 +1967,7 @@ function openEditor(){
   stopAll(); closePop();
   editor.value = text;
   reader.hidden = true; legend.hidden = true; editorWrap.hidden = false; editBtn.hidden = true;
+  viewBtn.hidden = true; viewPanel.hidden = true; viewBtn.setAttribute('aria-expanded', 'false'); closePalette();
   updateEditorCount();
   editor.focus();
 }
@@ -1776,7 +1975,7 @@ function closeEditor(){
   var v = editor.value.trim();
   if (!v){ editorCount.textContent = 'Вставь текст эссе, чтобы продолжить.'; return; }
   text = v; store.set('ev.text', text);
-  editorWrap.hidden = true; reader.hidden = false; legend.hidden = false; editBtn.hidden = false;
+  editorWrap.hidden = true; reader.hidden = false; legend.hidden = false; editBtn.hidden = false; viewBtn.hidden = false;
   build();
   applyVoice(voiceSel.value);
 }
