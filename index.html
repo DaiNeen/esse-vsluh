@@ -804,6 +804,7 @@ function endListen(natural){
   cancelAnimationFrame(l.raf); clearTimeout(l.timer);
   if (l.kind === 'az'){
     (l.srcs || []).forEach(function(src){ try { src.onended = null; src.stop(); } catch (e) {} });
+    stopKeepAlive();
   } else {
     try { if (synth && (synth.speaking || synth.pending)) synth.cancel(); } catch (e) {}
   }
@@ -920,10 +921,39 @@ function playChunk(ci){
    start sound that does not follow a tap directly). Words are highlighted from the
    timing Azure reports for each of them. */
 var playCtx = null;
+/* iPhone details:
+   - Web Audio obeys the silent switch and, after the microphone was used, may go to the
+     earpiece. Asking for the "playback" audio session sends it to the speaker; older
+     iPhones get the same effect from a silent HTML audio track playing alongside.
+   - After switching apps the audio context stays "interrupted" and its clock stops, so
+     a context that is not running is replaced with a fresh one on the next tap. */
+function setAudioMode(kind){
+  try { if (navigator.audioSession) navigator.audioSession.type = kind === 'play' ? 'playback' : 'auto'; } catch (e) {}
+}
+var keepAlive = null;
+function silentWavUrl(){
+  var sr = 8000, n = sr / 2, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  function w(o, s){ for (var i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); }
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt '); v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+  return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+}
+function startKeepAlive(){
+  if (!IS_IOS || navigator.audioSession) return;
+  try {
+    if (!keepAlive){ keepAlive = new Audio(silentWavUrl()); keepAlive.loop = true; keepAlive.setAttribute('playsinline', ''); }
+    var p = keepAlive.play(); if (p && p.catch) p.catch(function(){});
+  } catch (e) {}
+}
+function stopKeepAlive(){ if (keepAlive){ try { keepAlive.pause(); } catch (e) {} } }
 function getPlayCtx(){
   // Must run inside a tap or click: that is what allows sound on iPhone.
   if (!AC0) return null;
-  if (!playCtx || playCtx.state === 'closed'){ try { playCtx = new AC0(); } catch (e) { playCtx = null; return null; } }
+  setAudioMode('play');
+  startKeepAlive();
+  if (playCtx && playCtx.state !== 'running'){ try { playCtx.close(); } catch (e) {} playCtx = null; }
+  if (!playCtx){ try { playCtx = new AC0(); } catch (e) { playCtx = null; return null; } }
   try { if (playCtx.state !== 'running') playCtx.resume(); } catch (e) {}
   try {
     var b = playCtx.createBuffer(1, 1, 22050), src = playCtx.createBufferSource();
@@ -993,11 +1023,18 @@ function azListen(from){
   listenCursor(from);
   var parts = azParts(from), pi = 0;
   function fail(msg){ if (L !== l) return; endListen(false); setLive(msg, 'warn'); }
+  l.timer = setTimeout(function(){ if (L === l && !l.t0) fail('Azure не прислал озвучку. Проверь интернет и нажми «Послушать» ещё раз.'); }, 15000);
   azLoad().then(function(sdk){
     if (L !== l) return;
     var tick = function(){
       if (L !== l) return;
       if (l.t0){
+        // If the audio clock does not run, say so instead of hanging on the first word.
+        if (ctx.state !== 'running'){
+          if (!l.stall) l.stall = performance.now();
+          try { ctx.resume(); } catch (e) {}
+          if (performance.now() - l.stall > 3000){ fail('Звук не запустился. Нажми «Послушать» ещё раз.'); return; }
+        } else l.stall = 0;
         var t = ctx.currentTime, b = l.bounds;
         while (l.bp < b.length && b[l.bp].t <= t) l.bp++;
         if (l.bp > 0) listenCursor(b[l.bp - 1].i);
@@ -1041,6 +1078,7 @@ function speakWord(t){
         return decodeAudio(ctx, res.audio).then(function(buf){
           var src = ctx.createBufferSource();
           src.buffer = buf; src.connect(ctx.destination); src.start(ctx.currentTime + 0.03);
+          src.onended = function(){ if (mode !== 'listen') stopKeepAlive(); };
         });
       }).catch(function(err){ setPopRes(err && err.message ? err.message : 'Не удалось получить озвучку Azure.', 'bad'); });
       return;
@@ -1066,6 +1104,7 @@ function unlockSpeech(){
    is handed over to it. */
 var micRestore = 0;
 function primeMic(){
+  if (IS_IOS){ stopKeepAlive(); setAudioMode('record'); }
   if (!IS_IOS || !AC0 || engine() !== 'az') return;
   var ctx;
   try {
