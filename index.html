@@ -249,6 +249,13 @@ details p{margin:8px 0 0;color:var(--muted)}
 .hist text{fill:var(--muted);font:500 10px var(--f-num)}
 .hist text.last{fill:var(--ink);font-weight:600}
 .note{font-size:12px;color:var(--muted);margin:12px 0 0}
+.ai-box{display:flex;flex-direction:column;gap:8px}
+.ai-box .hint{margin:0}
+#aiPrompt{width:100%;min-height:160px;resize:vertical;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--paper);font:12px/1.5 var(--f-num);color:var(--ink)}
+.consent{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;padding:12px 16px;border:1px solid var(--line);border-radius:14px;background:var(--sheet)}
+.consent p{margin:0;font-size:14px;max-width:72ch;min-width:0}
+.stats-line{margin:0;font-size:12px;color:var(--muted)}
+.stats-line .link-btn{font-size:12px}
 
 /* word popover */
 .pop{position:absolute;z-index:40;width:min(300px,calc(100vw - 24px));background:var(--sheet);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.2);padding:14px;display:flex;flex-direction:column;gap:10px}
@@ -290,6 +297,11 @@ details p{margin:8px 0 0;color:var(--muted)}
     </span>
     <h1>Эссе вслух</h1>
   </header>
+
+  <div id="consent" class="consent" role="region" aria-label="Статистика" hidden>
+    <p>Тренажёр анонимно отправляет автору тексты, которые ты загружаешь, и результаты чтения, чтобы его улучшать. Имя, ключ Azure и запись голоса не отправляются.</p>
+    <div class="row"><button id="consentYes" class="btn sm primary" type="button">Понятно</button><button id="consentNo" class="btn sm" type="button">Не отправлять</button></div>
+  </div>
 
   <main class="layout">
     <section class="sheet" aria-label="Текст эссе">
@@ -379,6 +391,7 @@ details p{margin:8px 0 0;color:var(--muted)}
       </div>
 
       <div id="results" class="card results" aria-live="polite"></div>
+      <p id="statsLine" class="stats-line" hidden></p>
     </aside>
   </main>
 </div>
@@ -624,7 +637,69 @@ function renderUsage(){
 }
 function setAzStatus(t, cls){ azStatus.textContent = t; azStatus.className = 'az-status' + (cls ? ' ' + cls : ''); }
 
-function setLive(t, st){ liveText.textContent = t; dot.className = 'dot' + (st ? ' ' + st : ''); }
+function setLive(t, st){ liveText.textContent = t; dot.className = 'dot' + (st ? ' ' + st : ''); if (st === 'warn') trackIssue(t); }
+
+/* ---------- anonymous statistics for the author ---------- */
+/* Events go to a Google Apps Script web app that appends them to a Google Sheet. Nothing is
+   sent until the reader agrees; the Azure key, names and voice recordings are never sent. */
+var ANALYTICS_URL = '';
+var APP_V = '2026-10-25';
+function rid(n){
+  var s = '';
+  try { var a = new Uint8Array(n); crypto.getRandomValues(a); for (var i = 0; i < n; i++) s += (a[i] % 36).toString(36); }
+  catch (e) { while (s.length < n) s += Math.random().toString(36).slice(2); s = s.slice(0, n); }
+  return s;
+}
+var uid = store.get('ev.uid', null);
+if (!uid){ uid = rid(8); store.set('ev.uid', uid); }
+var sid = rid(6), consent = store.get('ev.consent', null), lastIssue = {};
+function deviceName(){
+  var ua = navigator.userAgent;
+  var os = IS_IOS ? 'iPhone/iPad' : /Android/i.test(ua) ? 'Android' : /Windows/i.test(ua) ? 'Windows' : /Mac/i.test(ua) ? 'Mac' : 'Другое';
+  var br = /Edg\//.test(ua) ? 'Edge' : /YaBrowser/.test(ua) ? 'Яндекс' : /OPR\//.test(ua) ? 'Opera' : /Firefox|FxiOS/.test(ua) ? 'Firefox' : /CriOS|Chrome/.test(ua) ? 'Chrome' : /Safari/.test(ua) ? 'Safari' : 'другой';
+  return os + ' · ' + br;
+}
+function track(event, data){
+  if (!ANALYTICS_URL || consent !== 'yes') return;
+  var p = { v: APP_V, uid: uid, sid: sid, event: event, engine: engine(), device: deviceName(), textId: textKey };
+  if (data) for (var k in data) if (Object.prototype.hasOwnProperty.call(data, k)) p[k] = data[k];
+  try {
+    var body = JSON.stringify(p);
+    fetch(ANALYTICS_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: body, keepalive: body.length < 60000 }).catch(function(){});
+  } catch (e) {}
+}
+function trackTextOnce(){
+  if (!ANALYTICS_URL || consent !== 'yes' || !units.length) return;
+  var sent = store.get('ev.sentTexts', []);
+  if (!Array.isArray(sent)) sent = [];
+  if (sent.indexOf(textKey) >= 0) return;
+  var sample = text.trim() === SAMPLE.trim();
+  track('text', sample ? { words: units.length, sample: true } : { words: units.length, text: text.slice(0, 45000) });
+  sent.push(textKey); store.set('ev.sentTexts', sent.slice(-100));
+}
+function trackIssue(msg){
+  var now = Date.now();
+  if (lastIssue[msg] && now - lastIssue[msg] < 60000) return;
+  lastIssue[msg] = now;
+  track('issue', { msg: msg });
+}
+var consentEl = $('consent'), statsLine = $('statsLine');
+function renderConsent(){
+  if (!ANALYTICS_URL){ consentEl.hidden = true; statsLine.hidden = true; return; }
+  consentEl.hidden = consent !== null;
+  statsLine.hidden = consent === null;
+  statsLine.innerHTML = consent === 'yes'
+    ? 'Анонимная статистика для автора включена. <button class="link-btn" type="button" data-c="no">Выключить</button>'
+    : 'Анонимная статистика для автора выключена. <button class="link-btn" type="button" data-c="yes">Включить</button>';
+}
+function trackVisit(){ track('visit', { screen: window.innerWidth + '×' + window.innerHeight, lang: navigator.language || '', azure: AZ.on }); }
+function setConsent(v){
+  consent = v; store.set('ev.consent', v); renderConsent();
+  if (v === 'yes') trackVisit();
+}
+$('consentYes').addEventListener('click', function(){ setConsent('yes'); });
+$('consentNo').addEventListener('click', function(){ setConsent('no'); });
+statsLine.addEventListener('click', function(e){ var b = e.target.closest('[data-c]'); if (b) setConsent(b.dataset.c); });
 
 /* ---------- building the text ---------- */
 var ABBR = {'mr.':1,'mrs.':1,'ms.':1,'dr.':1,'prof.':1,'st.':1,'e.g.':1,'i.e.':1,'etc.':1,'vs.':1,'approx.':1,'no.':1,'jr.':1,'sr.':1};
@@ -772,7 +847,14 @@ function applyView(){
     setVpStatus('Не удалось загрузить словарь. Проверь интернет и включи ещё раз.');
   });
 }
-function saveView(){ store.set('ev.view', view); }
+var viewTrackT = 0;
+function saveView(){
+  store.set('ev.view', view);
+  clearTimeout(viewTrackT);
+  viewTrackT = setTimeout(function(){
+    track('setting', { view: ['syl', 'labels', 'n', 'v', 'adj', 'adv'].filter(function(k){ return view[k]; }).join(' ') || 'обычный' });
+  }, 4000);
+}
 function closePalette(){ if (!palette.hidden){ palette.hidden = true; palette.innerHTML = ''; } }
 function openPalette(sw){
   var k = sw.dataset.k;
@@ -992,10 +1074,10 @@ function listenCursor(i){
 }
 function listenFrom(from){
   if (!units.length) return;
-  if (sel.kind === 'az'){
-    if (!AZ.key || !AZ.region){ setLive('Укажи ключ и регион Azure или выбери голос браузера.', 'warn'); return; }
-    azListen(from);
-  } else wsListen(from);
+  if (sel.kind === 'az' && (!AZ.key || !AZ.region)){ setLive('Укажи ключ и регион Azure или выбери голос браузера.', 'warn'); return; }
+  trackTextOnce();
+  track('listen', { voice: sel.kind === 'az' ? 'Azure ' + sel.name : (voice ? voice.name : 'по умолчанию'), rate: rate, from: from });
+  if (sel.kind === 'az') azListen(from); else wsListen(from);
 }
 function endListen(natural){
   var l = L; if (!l) return;
@@ -1016,6 +1098,7 @@ function endListen(natural){
       if (w >= 90 && w <= 230){ nativeWpm = w; store.set('ev.native.' + textKey, w); }
     }
   }
+  track('listen_end', { natural: !!natural, words: l.last - l.from, sec: l.t0 ? Math.round((performance.now() - l.t0) / 1000) : 0 });
   wake(false); setButtons();
   setLive(natural ? 'Дослушали. Теперь нажми «Читать сам».' : 'Остановлено.', natural ? 'done' : '');
 }
@@ -1426,6 +1509,7 @@ function beginRead(from, kind){
 }
 function readFrom(from){
   if (!units.length) return;
+  trackTextOnce();
   if (engine() === 'az') azRead(from); else wsRead(from);
 }
 function onSpeech(s){
@@ -1559,7 +1643,7 @@ function azCommit(s, par){
     if (op.q === 'skip'){ u.az = null; setQ(u, 'skip'); return; }
     var w = hyp[op.h].w, acc = num((w.PronunciationAssessment || {}).AccuracyScore);
     var otherWord = op.q === 'bad';
-    u.az = { acc: acc, ph: phonemesOf(w), heard: otherWord ? op.heard : '' };
+    u.az = { acc: acc, ph: phonemesOf(w), heard: otherWord ? op.heard : '', et: (w.PronunciationAssessment || {}).ErrorType || '' };
     var q = otherWord ? 'bad' : (acc == null ? op.q : acc >= 80 ? 'ok' : acc >= 60 ? 'close' : 'bad');
     setQ(u, q, otherWord ? op.heard : '');
     if (acc != null) s.azW.push({ acc: acc, dur: w.Duration || 1 });
@@ -1668,7 +1752,7 @@ function computeResult(s){
   var res = {
     engine: s.kind, c: c, attempted: att, pauses: s.pauses,
     readN: pos - readStart, total: units.length - readStart, done: Math.round((pos - readStart) / (units.length - readStart) * 100),
-    problems: problems.slice(0, 16), native: nativeWpm || 150, nativeMeasured: !!nativeWpm, t: Date.now()
+    problems: problems.slice(0, 16), native: nativeWpm || 150, nativeMeasured: !!nativeWpm, t: Date.now(), from: readStart, to: pos
   };
   if (s.kind === 'az'){
     var aw = 0, ad = 0;
@@ -1712,10 +1796,15 @@ function finalizeRead(s){
   wake(false); setButtons();
   if (res){
     saveHistory(res); lastRes = res; renderResults(res);
+    track('read', { engine: s.kind, score: res.score, acc: res.acc, flu: res.flu, pro: res.pro, comp: res.comp, wpm: res.wpm, done: res.done,
+      pauses: res.pauses, readN: res.readN, total: res.total, ok: res.c.ok, close: res.c.close, bad: res.c.bad, skip: res.c.skip,
+      sec: s.t0 && s.tLast ? Math.round((s.tLast - s.t0) / 1000) : 0,
+      problems: res.problems.slice(0, 12).map(function(p){ return p.word + (p.acc != null ? ' ' + Math.round(p.acc) : '') + (p.q === 'skip' ? ' (пропуск)' : ''); }).join(', ') });
     setLive((s.errMsg ? s.errMsg + ' ' : '') + 'Итог: ' + res.score + '%' + (res.wpm ? ' · ' + res.wpm + ' сл/мин' : ''), s.errMsg ? 'warn' : 'done');
     toResults.hidden = !isDockFixed();
   } else {
     setLive(s.errMsg || 'Не удалось ничего распознать. Проверь микрофон и попробуй ещё раз.', 'warn');
+    track('read_fail', { engine: s.kind, msg: s.errMsg || 'ничего не распознано' });
   }
 }
 function stopAll(){
@@ -1763,6 +1852,121 @@ function histHTML(h, kind){
 function statRow(k, sub, v, unit){
   return '<div class="stat"><span class="k">' + k + (sub ? '<small>' + sub + '</small>' : '') + '</span><span class="v">' + (v == null ? '—' : v) + (unit ? ' <small>' + unit + '</small>' : '') + '</span></div>';
 }
+/* ---------- prompt for an AI tutor (Azure results only) ---------- */
+var lastPrompt = '';
+var ET_TEXT = { UnexpectedBreak: 'лишняя пауза перед словом', MissingBreak: 'не хватает паузы после слова', Monotone: 'монотонно' };
+function markedText(from, to){
+  var out = '', lastP = null;
+  sentences.forEach(function(s){
+    var pEl = s.el.parentNode;
+    if (out) out += pEl !== lastP ? '\n\n' : ' ';
+    lastP = pEl;
+    var t = s.text, cur = 0, part = '';
+    for (var i = s.start; i < s.end; i++){
+      var u = units[i], a = u.off, b = u.off + u.disp.length;
+      part += t.slice(cur, a);
+      var m = /^([^A-Za-z0-9]*)(.*?)([^A-Za-z0-9%]*)$/.exec(t.slice(a, b)), core = m[2] || t.slice(a, b), mk = core;
+      if (i >= from && i < to){
+        if (u.q === 'bad') mk = '**' + core + '**';
+        else if (u.q === 'close') mk = '*' + core + '*';
+        else if (u.q === 'skip') mk = '[пропущено: ' + core + ']';
+      }
+      if (i === from && from > 0) part += '⟦начало чтения⟧ ';
+      part += m[1] + mk + m[3];
+      if (i === to - 1 && to < units.length) part += ' ⟦конец чтения⟧';
+      cur = b;
+    }
+    out += part + t.slice(cur);
+  });
+  return out;
+}
+function phLine(ph){
+  if (!ph || !ph.length) return '';
+  var weak = ph.filter(function(p){ return p.s != null && p.s < 70; }).map(function(p){
+    var alt = p.nb && p.nb.length && p.nb[0].p && p.nb[0].p !== p.p ? ' (прозвучало ближе к /' + p.nb[0].p + '/)' : '';
+    return '/' + p.p + '/ ' + Math.round(p.s) + '/100' + alt;
+  });
+  return ' Ожидаемые звуки: /' + ph.map(function(p){ return p.p; }).join(' ') + '/.' + (weak.length ? ' Слабые звуки: ' + weak.join(', ') + '.' : '');
+}
+function buildPrompt(res){
+  var from = res.from || 0, to = res.to || units.length;
+  var byKey = {}, items = [], other = [], skips = [], breaks = [];
+  for (var i = from; i < to; i++){
+    var u = units[i], w = clean(u.disp);
+    if (u.q === 'skip'){ if (skips.indexOf(w) < 0) skips.push(w); continue; }
+    if (!u.az) continue;
+    if (u.az.heard && canon(normWord(u.az.heard)) !== u.key) other.push('вместо «' + w + '» прозвучало «' + u.az.heard + '»');
+    if (u.az.et && ET_TEXT[u.az.et]) breaks.push(ET_TEXT[u.az.et] + ' «' + w + '»');
+    if (u.q !== 'bad' && u.q !== 'close') continue;
+    var it = byKey[u.key];
+    if (!it){ it = byKey[u.key] = { w: w, u: u, n: 0 }; items.push(it); }
+    it.n++;
+    if ((u.az.acc == null ? 0 : u.az.acc) < (it.u.az.acc == null ? 0 : it.u.az.acc)) it.u = u;
+  }
+  items.sort(function(a, b){ return (a.u.az.acc == null ? 0 : a.u.az.acc) - (b.u.az.acc == null ? 0 : b.u.az.acc); });
+  var L = [];
+  L.push('Ты — опытный преподаватель английского произношения (американский вариант) и тренер по IELTS Speaking. Я прочитал вслух своё эссе на английском, а Microsoft Azure Pronunciation Assessment автоматически оценил моё произношение. Помоги мне разобрать ошибки и составь план тренировки.');
+  L.push('');
+  L.push('Мой родной язык — русский или казахский, учитывай типичные трудности таких учеников. Отвечай на русском. Английские слова, примеры и транскрипции (IPA) оставляй на английском.');
+  L.push('');
+  L.push('## Общие результаты (из 100)');
+  L.push('- Итоговая оценка произношения: ' + res.score);
+  if (res.acc != null) L.push('- Точность звуков: ' + res.acc);
+  if (res.flu != null) L.push('- Беглость: ' + res.flu);
+  if (res.pro != null) L.push('- Интонация и ритм: ' + res.pro);
+  L.push('- Полнота: ' + res.comp);
+  L.push('- Темп: ' + (res.wpm ? res.wpm + ' слов в минуту' : 'не посчитан') + (res.nativeMeasured
+    ? ' (эталонная озвучка этого текста — около ' + res.native + ' слов в минуту)'
+    : ' (обычный темп чтения вслух у носителя — около 150 слов в минуту)'));
+  L.push('- Длинных пауз (дольше 2 секунд): ' + res.pauses);
+  L.push('- Прочитано: ' + res.readN + ' из ' + res.total + ' слов');
+  L.push('');
+  L.push('## Текст эссе');
+  var part = from > 0 && to < units.length ? ' Я читал только часть между отметками ⟦начало чтения⟧ и ⟦конец чтения⟧.'
+    : to < units.length ? ' Я прочитал текст до отметки ⟦конец чтения⟧.'
+    : from > 0 ? ' Я читал, начиная с отметки ⟦начало чтения⟧.' : '';
+  L.push('Обозначения: **слово** — серьёзная ошибка произношения (точность ниже 60), *слово* — неточно (60–79), [пропущено: слово] — слово не прочитано.' + part);
+  L.push('');
+  L.push(markedText(from, to));
+  L.push('');
+  L.push('## Слова с ошибками (от худших к лучшим)');
+  if (items.length){
+    items.slice(0, 25).forEach(function(it, k){
+      var a = it.u.az.acc;
+      L.push((k + 1) + '. ' + it.w + ' — ' + (a == null ? 'без оценки' : Math.round(a) + '/100') + (it.n > 1 ? ', встречается ' + it.n + ' раза' : '') + '.' + phLine(it.u.az.ph));
+    });
+    if (items.length > 25) L.push('…и ещё ' + (items.length - 25) + ' слов с меньшими ошибками.');
+  } else L.push('Серьёзных ошибок в отдельных словах нет.');
+  if (other.length) L.push('Прозвучали другие слова: ' + other.slice(0, 12).join('; ') + '.');
+  if (skips.length) L.push('Пропущенные слова: ' + skips.slice(0, 20).join(', ') + '.');
+  if (breaks.length) L.push('Паузы и интонация: ' + breaks.slice(0, 15).join('; ') + '.');
+  L.push('');
+  L.push('## Что нужно сделать');
+  L.push('1. Сгруппируй мои ошибки по типам: конкретные звуки, долгие и краткие гласные, ударение, конечные согласные, связность речи. Для каждой группы объясни, почему такая ошибка типична для меня, и как произносить правильно: положение языка и губ, длительность звука. Объясняй просто.');
+  L.push('2. По каждому слову из списка дай правильное произношение (IPA и примерное звучание русскими буквами), ударный слог и пару слов для сравнения (minimal pair), если она уместна.');
+  L.push('3. Оцени мой темп и паузы. Возьми 2–3 предложения из моего текста, расставь в них паузы знаком / и выдели ударные слова заглавными буквами, чтобы речь звучала естественно.');
+  L.push('4. Коротко отметь грамматические и лексические ошибки в самом тексте эссе (до 10) и дай исправления.');
+  L.push('5. Составь план тренировки на 15 минут: упражнения на мои проблемные звуки, 5–6 коротких фраз со словами из моего эссе и упражнение shadowing.');
+  L.push('6. В конце дай 3 коротких задания, чтобы проверить, что я понял.');
+  L.push('');
+  L.push('Оценка автоматическая и иногда ошибается, особенно на коротких словах. Если отметка выглядит сомнительной, скажи об этом. Не переписывай эссе целиком.');
+  return L.join('\n');
+}
+resultsEl.addEventListener('click', function(e){
+  if (!e.target.closest('#copyPrompt')) return;
+  var ta = $('aiPrompt'), st = $('copyStatus');
+  function ok(){ st.textContent = 'Скопировано. Вставь в чат с ИИ.'; track('prompt_copy', { chars: lastPrompt.length }); }
+  function fallback(){
+    try {
+      ta.focus(); ta.select(); ta.setSelectionRange(0, ta.value.length);
+      if (document.execCommand && document.execCommand('copy')) ok(); else st.textContent = 'Выдели текст в поле и скопируй вручную.';
+    } catch (er) { st.textContent = 'Выдели текст в поле и скопируй вручную.'; }
+  }
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(lastPrompt).then(ok, fallback);
+    else fallback();
+  } catch (er) { fallback(); }
+});
 function renderResults(res){
   var kind = res ? res.engine : engine(), hist = getHist(kind), html = '';
   if (!res){
@@ -1807,6 +2011,14 @@ function renderResults(res){
     html += az
       ? '<p class="note">Azure сравнивает каждый звук с американским эталоном. Нажми на слово, чтобы увидеть, какие звуки получились хуже.</p>'
       : '<p class="note">Процент — доля слов, которые распознаватель услышал так, как они написаны. Если слово нашлось только в запасных вариантах распознавания, оно «неточное» и считается за половину.</p>';
+    if (az){
+      lastPrompt = buildPrompt(res);
+      html += '<h3>Разбор с ИИ</h3><div class="ai-box"><p class="hint">Скопируй промпт и вставь его в ChatGPT, Claude или другой ИИ. Он разберёт твои ошибки и даст упражнения.</p>' +
+        '<textarea id="aiPrompt" readonly spellcheck="false" aria-label="Промпт для разбора ошибок">' + esc(lastPrompt) + '</textarea>' +
+        '<div class="row"><button id="copyPrompt" class="btn sm primary" type="button">Скопировать промпт</button><span id="copyStatus" class="meta" aria-live="polite"></span></div></div>';
+    } else {
+      html += '<p class="note">Промпт для разбора ошибок с ИИ появляется после чтения с Azure: только он оценивает каждый звук.</p>';
+    }
   }
   if (hist.length) html += histHTML(hist, kind);
   resultsEl.innerHTML = html;
@@ -1939,6 +2151,7 @@ function azSayWord(i){
         if (acc == null){ setPopRes('Не расслышал, попробуй ещё раз.', 'bad'); return; }
         var q = acc >= 80 ? 'ok' : acc >= 60 ? 'close' : 'bad';
         setPopRes((q === 'ok' ? 'Чисто! ' : q === 'close' ? 'Почти. ' : 'Нужно поработать. ') + 'Точность ' + Math.round(acc) + '%', q);
+        track('word', { word: clean(u.disp), acc: Math.round(acc) });
         renderPhonemes(phonemesOf(w));
       } else if (result.reason === sdk.ResultReason.NoMatch){
         setPopRes('Не расслышал, попробуй ещё раз.', 'bad');
@@ -2050,6 +2263,7 @@ azOn.checked = AZ.on; azBody.hidden = !AZ.on; azKey.value = AZ.key; azRegion.val
 azOn.addEventListener('change', function(){
   stopAll();
   AZ.on = azOn.checked; store.set('ev.az.on', AZ.on);
+  track('setting', { azure: AZ.on });
   azBody.hidden = !AZ.on;
   if (AZ.on && !store.get('ev.az.voiceSet', false)){
     store.set('ev.voiceSel', 'az:' + (/guy/i.test(sel.name) ? 'en-US-GuyNeural' : 'en-US-AndrewNeural'));
@@ -2091,6 +2305,8 @@ if (synth){
 build();
 applyVoice(voiceSel.value);
 setButtons();
+renderConsent();
+if (consent === 'yes') trackVisit();
 })();
 </script>
 </body>
